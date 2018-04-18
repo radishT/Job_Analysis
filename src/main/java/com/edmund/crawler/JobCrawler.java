@@ -1,5 +1,6 @@
 package com.edmund.crawler;
 
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,16 +27,67 @@ public class JobCrawler {
 	private static String key = null;
 	private static String city = null;
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws FileNotFoundException {
 		for (int i = 0; i < infos[0].length; i++) {
 			root = infos[0][i];
 			city = infos[1][i];
 			for (String strkey : keys) {
 				key = strkey;
-				List<Job> jobs = crawJobs();
-				DBUtils.writeToFile(jobs, city + "-" + key + "-info.txt");
+				// List<Job> jobs = crawJobs();
+				// DBUtils.writeToFile(jobs, city + "-" + key + "-info.txt");
+				crawJobs_MultiThread();
 			}
 		}
+	}
+
+	/**
+	 * 从指定根站点，以指定关键字开始爬取职位信息,多线程方式将职位信息逐条写入文件中
+	 * 
+	 * @throws FileNotFoundException
+	 */
+	public static void crawJobs_MultiThread() throws FileNotFoundException {
+		System.setProperty("webdriver.chrome.driver", "D:/utils/chromedriver.exe");
+		ChromeDriver driver = new ChromeDriver();
+		String baseUrl = root + "job/?key=#&final=1&jump=1";// 预处理的URL
+		driver.get(baseUrl.replace("#", key));
+		// 最大化窗口
+		driver.manage().window().maximize();
+
+		WebDriverWait wait = new WebDriverWait(driver, 10);
+
+		// 等待职位列表和分页列表加载完毕
+		wait.until(ExpectedConditions.presenceOfElementLocated(By.id("list_con")));
+		wait.until(ExpectedConditions.presenceOfElementLocated(By.className("next")));
+
+		while (true) {
+			WebElement list = driver.findElementById("list_con");
+			List<WebElement> positions = list.findElements(By.tagName("li"));
+			for (WebElement webElement : positions) {
+				// 出现此条语句表示下面的结果与搜索关键字无关，故直接抛弃下面的职位
+				if (webElement.getText().contains("为您推荐以下职位")) {
+					break;
+				}
+				new Thread() {
+					@Override
+					public void run() {
+						try {
+							DBUtils.writeToFile(createJobVo(webElement), city + "-" + key + "-info.txt");
+						} catch (FileNotFoundException e) {
+							e.printStackTrace();
+						}
+					}
+				}.start();
+			}
+
+			WebElement next = driver.findElement(By.className("next"));
+
+			// 一旦翻页按钮无法使用，表示到了最后一页，则退出循环
+			if (next.getAttribute("class").contains("disabled")) {
+				break;
+			}
+			next.click();
+		}
+
 	}
 
 	/**
