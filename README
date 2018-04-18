@@ -1,0 +1,32 @@
+项目部署说明:
+====clone  从github拷贝到本地仓库
+	eclipse---配置完maven后---import git project---clone URI---general project
+右键项目---configure---convert to maven
+====commit 提交项目状态到本地仓库
+	右键项目-team-commit
+	注意:commit  必须写明做了哪些提交,这是其他成员pull时看到的
+====push  将本地仓库与GitHub远程仓库做提交
+	右键项目-team-remote-push
+	push失败找组长
+====pull  将GitHub仓库的代码同步到本地
+	右键项目-team-pull
+注:建议每天清理自己的工作区 如果项目右边的[]中有↑箭头,说明还有东西未提交到GitHub.
+====编码要求:
+----eclipse中设置:设置编码UTF-8,选用Unix系统的换行符,如果谁的文件打开注释乱码,责令修改
+	进入window-general-workspace
+	text file encoding---->UTF-8
+	New text file line delimiter---->Unix
+
+----新建类,新建方法,必须写明注释,如参数和返回值的解释,还有作者
+
+----所有人的阶段性成果(除源代码外)都存放在result-sources中
+每个文件第一行写这个文件的作用和最近修改时间
+
+====目录说明:
+----源文件目录src/main/java
+	自建包,写自建的源代码,如com.radish.util  是我的工具类
+						  com.radish.crawler  是我爬虫
+----pom文件不许修改,如果要申请加入依赖,找组长
+
+
+
