@@ -1,4 +1,7 @@
-省份		市			url	
+直辖市	北京	http://bj.58.com/job/?key=#&final=1&jump=1
+直辖市	上海	http://sh.58.com/job/?key=#&final=1&jump=1
+直辖市	天津	http://tj.58.com/job/?key=#&final=1&jump=1
+直辖市	重庆	http://cq.58.com/job/?key=#&final=1&jump=1
 安徽	合肥	http://hf.58.com/job/?key=#&final=1&jump=1
 安徽	芜湖	http://wuhu.58.com/job/?key=#&final=1&jump=1
 安徽	蚌埠	http://bengbu.58.com/job/?key=#&final=1&jump=1
