@@ -23,8 +23,8 @@ import com.edmund.vo.Job;
  */
 public class JobCrawler {
 	// private static String[] keys = { "java", "c#", "c++", "Android", "php" };
+	private static String[] keys = { "python", "c++", "Android", "php" };
 	private static ChromeDriver driver = null;
-	private static String[] keys = { "java" };
 	private static Map<String, List<String>> infos = null;
 	private static String root = null;
 	private static String key = null;
@@ -35,13 +35,13 @@ public class JobCrawler {
 		infos = DBUtils.readFromFile("emp.txt");
 		List<String> cities = infos.get("cities");
 		List<String> roots = infos.get("roots");
-		for (int i = 0; i < cities.size(); i++) {
-			root = roots.get(i);
-			city = cities.get(i);
-			for (String strkey : keys) {
-				key = strkey;
+		for (String strkey : keys) {
+			key = strkey;
+			for (int i = 0; i < cities.size(); i++) {
+				root = roots.get(i);
+				city = cities.get(i);
 				List<Job> jobs = crawJobs();
-				DBUtils.writeToFile(jobs, city + "-" + key + "-info.txt");
+				DBUtils.writeToFile(jobs, key + "/" + city + "-" + key + "-info.txt");
 				// crawJobs_MultiThread();
 			}
 		}
