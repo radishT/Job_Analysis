@@ -8,7 +8,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.edmund.vo.Job;
 
@@ -27,21 +30,28 @@ public class DBUtils {
 	/**
 	 * 从文件中读取网站根路径和城市
 	 * 
-	 * @return String[0][N]表示根网站，String[1][N]表示城市
+	 * @param filename
+	 *            文件名
+	 * @return 包含网站根路径列表和城市列表的map集合,可以通过get("cities")获得城市列表,get("roots")获得网站根路径列表，两个列表的索引一一对应
 	 * @throws IOException
 	 */
-	public static String[][] readFromFile(String filename) throws IOException {
-		String[][] infos = new String[2][];
+	public static Map<String, List<String>> readFromFile(String filename) throws IOException {
+		Map<String, List<String>> infos = new HashMap<String, List<String>>();
+		List<String> cities = new ArrayList<String>();
+		List<String> roots = new ArrayList<String>();
 
 		File file = new File(READDIR + filename);
 		FileInputStream in = new FileInputStream(file);
 		BufferedReader reader = new BufferedReader(new InputStreamReader(in, "UTF-8"));
 		String line = null;
+
 		while ((line = reader.readLine()) != null) {
-			for (String str : line.split("\\t")) {
-				System.out.println(str);
-			}
+			cities.add(line.split("\\t")[1]);
+			roots.add(line.split("\\t")[2]);
 		}
+		infos.put("cities", cities);
+		infos.put("roots", roots);
+		reader.close();
 		return infos;
 	}
 
