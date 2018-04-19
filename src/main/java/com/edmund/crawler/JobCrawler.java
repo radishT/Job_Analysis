@@ -56,22 +56,15 @@ public class JobCrawler {
 	}
 
 	/**
-	 * 从指定根站点，以指定关键字开始爬取职位信息,多线程方式将职位信息逐条写入文件中
+	 * 从指定根站点，以指定关键字开始爬取职位信息,多线程方式将职位信息逐条写入文件中 58同城
 	 * 
 	 * @throws FileNotFoundException
 	 */
 	public static void crawJobs_MultiThread() throws FileNotFoundException {
 
-		String baseUrl = root + "job/?key=#&final=1&jump=1";// 预处理的URL
-		driver.get(baseUrl.replace("#", key));
-		// 最大化窗口
-		driver.manage().window().maximize();
-
-		WebDriverWait wait = new WebDriverWait(driver, 10);
-
-		// 等待职位列表和分页列表加载完毕
-		wait.until(ExpectedConditions.presenceOfElementLocated(By.id("list_con")));
-		wait.until(ExpectedConditions.presenceOfElementLocated(By.className("next")));
+		if (pretreatment() == -1) {
+			return;
+		}
 
 		while (true) {
 			WebElement list = driver.findElementById("list_con");
@@ -93,19 +86,15 @@ public class JobCrawler {
 				}.start();
 			}
 
-			WebElement next = driver.findElement(By.className("next"));
-
-			// 一旦翻页按钮无法使用，表示到了最后一页，则退出循环
-			if (next.getAttribute("class").contains("disabled")) {
+			if (nextPage() == -1) {
 				break;
 			}
-			next.click();
 		}
 
 	}
 
 	/**
-	 * 从指定根站点，以指定关键字开始爬取职位信息
+	 * 从指定根站点，以指定关键字开始爬取职位信息 58同城
 	 * 
 	 * @param root
 	 *            根站点
@@ -115,16 +104,9 @@ public class JobCrawler {
 	 */
 	public static List<Job> crawJobs() {
 
-		String baseUrl = root + "job/?key=#&final=1&jump=1";// 预处理的URL
-		driver.get(baseUrl.replace("#", key));
-		// 最大化窗口
-		driver.manage().window().maximize();
-
-		WebDriverWait wait = new WebDriverWait(driver, 10);
-
-		// 等待职位列表和分页列表加载完毕
-		wait.until(ExpectedConditions.presenceOfElementLocated(By.id("list_con")));
-		wait.until(ExpectedConditions.presenceOfElementLocated(By.className("next")));
+		if (pretreatment() == -1) {
+			return null;
+		}
 
 		List<Job> jobs = new ArrayList<Job>();
 		while (true) {
@@ -132,23 +114,65 @@ public class JobCrawler {
 			List<WebElement> positions = list.findElements(By.tagName("li"));
 			for (WebElement webElement : positions) {
 				// 出现此条语句表示下面的结果与搜索关键字无关，故直接抛弃下面的职位
-				if (webElement.getText().contains("为您推荐以下职位")) {
+				if (webElement.getAttribute("class").contains("noData")) {
 					break;
 				}
 				jobs.add(createJobVo(webElement));
-				// printPositionInfo(webElement);
 			}
-
-			WebElement next = driver.findElement(By.className("next"));
-
-			// 一旦翻页按钮无法使用，表示到了最后一页，则退出循环
-			if (next.getAttribute("class").contains("disabled")) {
+			if (nextPage() == -1) {
 				break;
 			}
-			next.click();
 		}
 		return jobs;
 
+	}
+
+	/**
+	 * 在爬取数据之前做的预处理工作
+	 * 
+	 * @return 0表示预处理正常,-1表示预处理失败
+	 */
+	private static int pretreatment() {
+		String baseUrl = root;// 预处理的URL
+		driver.get(baseUrl.replace("#", key));
+		// 最大化窗口
+		// driver.manage().window().maximize();
+
+		WebDriverWait wait = new WebDriverWait(driver, 10);
+
+		// 等待职位列表和分页列表加载完毕
+		try {
+			wait.until(ExpectedConditions.presenceOfElementLocated(By.id("list_con")));
+		} catch (Exception e) {
+			// 如果出现页面中没有list_con元素的情况，视为没有职位信息，直接退出本页面
+			return -1;
+		}
+		// wait.until(ExpectedConditions.presenceOfElementLocated(By.className("next")));
+
+		return 0;
+	}
+
+	/**
+	 * 爬取完数据后的翻页操作
+	 * 
+	 * @return 0表示翻页操作可以正常执行,-1表示翻页操作不能继续进行
+	 */
+	public static int nextPage() {
+		// 使用findElements可以避免出现‘页面中没有next元素’而导致的异常
+		List<WebElement> nextlist = driver.findElementsByClassName("next");
+		// 如果页面中没有next元素，则不点击next，直接退出本次循环
+		if (nextlist == null || nextlist.isEmpty()) {
+			return -1;
+		}
+
+		WebElement next = nextlist.get(0);
+
+		// 一旦翻页按钮无法使用，表示到了最后一页，则退出循环
+		if (next.getAttribute("class").contains("disabled")) {
+			return -1;
+		}
+		next.click();
+		return 0;
 	}
 
 	/**
