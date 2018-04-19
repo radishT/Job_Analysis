@@ -1,3 +1,5 @@
+项目过程记录文件-----/Project_Info.doc
+
 项目部署说明:
 ====clone  从github拷贝到本地仓库
 	eclipse---配置完maven后---import git project---clone URI---general project
