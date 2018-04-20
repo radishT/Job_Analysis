@@ -6,6 +6,7 @@ import com.radish.crawler.BOSSCrawlerManager.WorkerThread;
 
 public class Test {
 	public static void main(String[] args) {
+		System.setProperty("webdriver.chrome.driver", "D:/chrome_driver/chromedriver.exe");
 		// 获得单例句柄
 		BOSSCrawlerManager instance = BOSSCrawlerManager.getInstance();
 		// 初始化单例对象
