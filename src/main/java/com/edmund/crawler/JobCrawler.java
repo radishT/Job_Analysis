@@ -28,12 +28,14 @@ public class JobCrawler {
 	private static List<String> cities = null;
 	private static List<String> roots = null;
 
-	public static void main(String[] args) throws IOException {
+	private static final int THREAD_NUMBER = 5;
+
+	public static void main(String[] args) {
 		for (String strkey : keys) {
 			initLists(strkey);
 		}
 
-		for (int i = 0; i < 5; i++) {
+		for (int i = 0; i < THREAD_NUMBER; i++) {
 			new JobCrawler().new crawThread().start();
 		}
 	}
@@ -54,7 +56,13 @@ public class JobCrawler {
 					break;
 				}
 				String key = whichKey(urls[1]);
-				List<Job> jobs = crawJobs(urls, key, driver);
+
+				List<Job> jobs = null;
+				try {
+					jobs = crawJobs(urls, key, driver);
+				} catch (Exception e) {
+					pushIntoLists(urls);
+				}
 				DBUtils.writeToFile(jobs, key + "/" + this.getName() + "/"
 						+ urls[0] + "-" + key + "-info.txt");
 			}
@@ -87,7 +95,6 @@ public class JobCrawler {
 		try {
 			infos = DBUtils.readFromFile("emp.txt");
 		} catch (IOException e) {
-			e.printStackTrace();
 		}
 		List<String> newroot = new ArrayList<String>();
 		cities = infos.get("cities");
@@ -110,6 +117,15 @@ public class JobCrawler {
 	}
 
 	/**
+	 * 如果出现异常情况导致没有被其他catch语句捕获，就将该url重新加入列表中处理
+	 * @param url
+	 */
+	private synchronized static void pushIntoLists(String[] urls) {
+		cities.add(urls[0]);
+		roots.add(urls[1]);
+	}
+
+	/**
 	 * 根据url判断该url属于哪个关键字
 	 * @param url
 	 * @return 关键字
@@ -126,7 +142,6 @@ public class JobCrawler {
 	/**
 	 * 从指定根站点，以指定关键字开始爬取职位信息,多线程方式将职位信息逐条写入文件中 58同城
 	 * 该方法暂时废弃
-	 * @throws FileNotFoundException
 	 */
 
 	/**
@@ -139,12 +154,7 @@ public class JobCrawler {
 	public static List<Job> crawJobs(String[] urls, String key,
 			ChromeDriver driver) {
 
-		try {
-			if (pretreatment(urls[1], driver) == -1) {
-				return null;
-			}
-		} catch (Exception e1) {
-			e1.printStackTrace();
+		if (pretreatment(urls[1], driver) == -1) {
 			return null;
 		}
 
@@ -185,7 +195,6 @@ public class JobCrawler {
 			wait.until(ExpectedConditions
 					.presenceOfElementLocated(By.id("list_con")));
 		} catch (Exception e) {
-			e.printStackTrace();
 			// 如果出现页面中没有list_con元素的情况，视为没有职位信息，直接退出本页面
 			return -1;
 		}
