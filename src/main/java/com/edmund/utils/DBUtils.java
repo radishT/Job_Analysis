@@ -22,27 +22,27 @@ import com.edmund.vo.Job;
  *
  */
 public class DBUtils {
-	private static final String BASEDIR = "C:/Users/admin/Desktop/jobs/";
-	private static final String READDIR = "C:/Users/admin/Desktop/files/";
 	private static PrintWriter pw = null;
 	private static int count = 1;
 
 	/**
 	 * 从文件中读取网站根路径和城市
 	 * 
-	 * @param filename
-	 *            文件名
+	 * @param filepath
+	 *            文件路径
 	 * @return 包含网站根路径列表和城市列表的map集合,可以通过get("cities")获得城市列表,get("roots")获得网站根路径列表，两个列表的索引一一对应
 	 * @throws IOException
 	 */
-	public static Map<String, List<String>> readFromFile(String filename) throws IOException {
+	public static Map<String, List<String>> readFromFile(String filepath)
+			throws IOException {
 		Map<String, List<String>> infos = new HashMap<String, List<String>>();
 		List<String> cities = new ArrayList<String>();
 		List<String> roots = new ArrayList<String>();
 
-		File file = new File(READDIR + filename);
+		File file = new File(filepath);
 		FileInputStream in = new FileInputStream(file);
-		BufferedReader reader = new BufferedReader(new InputStreamReader(in, "UTF-8"));
+		BufferedReader reader = new BufferedReader(
+				new InputStreamReader(in, "UTF-8"));
 		String line = null;
 
 		while ((line = reader.readLine()) != null) {
@@ -60,12 +60,14 @@ public class DBUtils {
 	 * 
 	 * @param job
 	 *            职位信息
-	 * @param filename
-	 *            保存的文件名
+	 * @param filepath
+	 *            保存的文件路径
 	 * @throws FileNotFoundException
 	 */
-	public static void writeToFile(Job job, String filename) throws FileNotFoundException {
-		PrintWriter pw = new PrintWriter(new FileOutputStream(new File(BASEDIR + filename), true));
+	public static void writeToFile(Job job, String filepath)
+			throws FileNotFoundException {
+		PrintWriter pw = new PrintWriter(
+				new FileOutputStream(new File(filepath), true));
 		pw.print(job.getCity() + "\t");
 		pw.print(job.getKey() + "\t");
 		pw.print(job.getTitle() + "\t");
@@ -83,15 +85,15 @@ public class DBUtils {
 	 * 
 	 * @param jobs
 	 *            职位信息列表
-	 * @param filename
-	 *            文件名
+	 * @param filepath
+	 *            文件路径
 	 */
-	public static void writeToFile(List<Job> jobs, String filename) {
+	public static void writeToFile(List<Job> jobs, String filepath) {
 		if (jobs == null || jobs.isEmpty()) {
 			return;
 		}
 		try {
-			initWriter(filename);
+			initWriter(filepath);
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
@@ -123,12 +125,17 @@ public class DBUtils {
 
 	/**
 	 * 开启writer
-	 * 
+	 * @param filepath 文件路径
 	 * @throws FileNotFoundException
 	 */
-	public static void initWriter(String filename) throws FileNotFoundException {
+	public static void initWriter(String filepath)
+			throws FileNotFoundException {
 		if (pw == null) {
-			pw = new PrintWriter(new FileOutputStream(new File(BASEDIR + filename), true));
+			File file = new File(filepath);
+			if (!file.getParentFile().exists()) {
+				file.getParentFile().mkdirs();
+			}
+			pw = new PrintWriter(new FileOutputStream(file, true));
 		}
 	}
 }
