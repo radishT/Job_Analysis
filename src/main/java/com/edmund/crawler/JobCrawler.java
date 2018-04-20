@@ -28,7 +28,7 @@ public class JobCrawler {
 	private static List<String> cities = null;
 	private static List<String> roots = null;
 
-	private static final int THREAD_NUMBER = 5;
+	private static final int THREAD_NUMBER = 1;
 
 	public static void main(String[] args) {
 		for (String strkey : keys) {
@@ -63,8 +63,10 @@ public class JobCrawler {
 				} catch (Exception e) {
 					pushIntoLists(urls);
 				}
-				DBUtils.writeToFile(jobs, key + "/" + this.getName() + "/"
-						+ urls[0] + "-" + key + "-info.txt");
+				DBUtils.writeToFile(jobs,
+						"./result-sources/EdmundDXu/jobs/" + key + "/"
+								+ this.getName() + "/" + urls[0] + "-" + key
+								+ "-info.txt");
 			}
 		}
 	}
@@ -93,7 +95,7 @@ public class JobCrawler {
 	 */
 	private static void initLists(String strkey) {
 		try {
-			infos = DBUtils.readFromFile("emp.txt");
+			infos = DBUtils.readFromFile("./result-sources/EdmundDXu/emp.txt");
 		} catch (IOException e) {
 		}
 		List<String> newroot = new ArrayList<String>();
@@ -111,7 +113,7 @@ public class JobCrawler {
 	 */
 	private static ChromeDriver initBrowser() {
 		System.setProperty("webdriver.chrome.driver",
-				"D:/utils/chromedriver.exe");
+				"./result-sources/EdmundDXu/chromedriver.exe");
 		ChromeDriver driver = new ChromeDriver();
 		return driver;
 	}
