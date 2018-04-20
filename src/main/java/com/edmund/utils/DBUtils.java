@@ -35,14 +35,16 @@ public class DBUtils {
 	 * @return 包含网站根路径列表和城市列表的map集合,可以通过get("cities")获得城市列表,get("roots")获得网站根路径列表，两个列表的索引一一对应
 	 * @throws IOException
 	 */
-	public static Map<String, List<String>> readFromFile(String filename) throws IOException {
+	public static Map<String, List<String>> readFromFile(String filename)
+			throws IOException {
 		Map<String, List<String>> infos = new HashMap<String, List<String>>();
 		List<String> cities = new ArrayList<String>();
 		List<String> roots = new ArrayList<String>();
 
 		File file = new File(READDIR + filename);
 		FileInputStream in = new FileInputStream(file);
-		BufferedReader reader = new BufferedReader(new InputStreamReader(in, "UTF-8"));
+		BufferedReader reader = new BufferedReader(
+				new InputStreamReader(in, "UTF-8"));
 		String line = null;
 
 		while ((line = reader.readLine()) != null) {
@@ -64,8 +66,10 @@ public class DBUtils {
 	 *            保存的文件名
 	 * @throws FileNotFoundException
 	 */
-	public static void writeToFile(Job job, String filename) throws FileNotFoundException {
-		PrintWriter pw = new PrintWriter(new FileOutputStream(new File(BASEDIR + filename), true));
+	public static void writeToFile(Job job, String filename)
+			throws FileNotFoundException {
+		PrintWriter pw = new PrintWriter(
+				new FileOutputStream(new File(BASEDIR + filename), true));
 		pw.print(job.getCity() + "\t");
 		pw.print(job.getKey() + "\t");
 		pw.print(job.getTitle() + "\t");
@@ -123,12 +127,17 @@ public class DBUtils {
 
 	/**
 	 * 开启writer
-	 * 
+	 * @param filename 文件名
 	 * @throws FileNotFoundException
 	 */
-	public static void initWriter(String filename) throws FileNotFoundException {
+	public static void initWriter(String filename)
+			throws FileNotFoundException {
 		if (pw == null) {
-			pw = new PrintWriter(new FileOutputStream(new File(BASEDIR + filename), true));
+			File file = new File(BASEDIR + filename);
+			if (!file.getParentFile().exists()) {
+				file.getParentFile().mkdirs();
+			}
+			pw = new PrintWriter(new FileOutputStream(file, true));
 		}
 	}
 }
