@@ -1,9 +1,11 @@
 package com.edmund.crawler;
 
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
@@ -27,8 +29,23 @@ public class JobCrawler {
 
 	private static List<String> cities = null;
 	private static List<String> roots = null;
+	private static String localdriver = null;
 
 	private static final int THREAD_NUMBER = 1;
+
+	/**
+	 * 读取配置文件
+	 */
+	static {
+		Properties property = new Properties();
+		try {
+			property.load(new FileInputStream(
+					"./src/main/java/com/edmund/properties"));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		localdriver = property.getProperty("LocalChromedriver");
+	}
 
 	public static void main(String[] args) {
 		for (String strkey : keys) {
@@ -95,7 +112,8 @@ public class JobCrawler {
 	 */
 	private static void initLists(String strkey) {
 		try {
-			infos = DBUtils.readFromFile("./result-sources/EdmundDXu/emp.txt");
+			infos = DBUtils
+					.readFromFile("./result-sources/EdmundDXu/files/emp.txt");
 		} catch (IOException e) {
 		}
 		List<String> newroot = new ArrayList<String>();
@@ -112,8 +130,7 @@ public class JobCrawler {
 	 * @return 浏览器驱动对象
 	 */
 	private static ChromeDriver initBrowser() {
-		System.setProperty("webdriver.chrome.driver",
-				"./result-sources/EdmundDXu/chromedriver.exe");
+		System.setProperty("webdriver.chrome.driver", localdriver);
 		ChromeDriver driver = new ChromeDriver();
 		return driver;
 	}
