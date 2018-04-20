@@ -23,15 +23,16 @@ import com.edmund.vo.Job;
  *
  */
 public class JobCrawler {
-	// private static String[] keys = { "java", "c#", "c++", "Android", "php" };
-	private static String[] keys = { "php" };
+	// private static String[] keys = { "java", "c#", "c++", "android", "php" };
+	private static String[] keys = { "android", "c" };
 	private static Map<String, List<String>> infos = null;
 
 	private static List<String> cities = null;
 	private static List<String> roots = null;
 	private static String localdriver = null;
+	private static String localexport = null;
 
-	private static final int THREAD_NUMBER = 1;
+	private static final int THREAD_NUMBER = 5;
 
 	/**
 	 * 读取配置文件
@@ -45,6 +46,8 @@ public class JobCrawler {
 			e.printStackTrace();
 		}
 		localdriver = property.getProperty("LocalChromedriver");
+		localexport = property.getProperty("LocalExportPath");
+
 	}
 
 	public static void main(String[] args) {
@@ -81,9 +84,8 @@ public class JobCrawler {
 					pushIntoLists(urls);
 				}
 				DBUtils.writeToFile(jobs,
-						"./result-sources/EdmundDXu/jobs/" + key + "/"
-								+ this.getName() + "/" + urls[0] + "-" + key
-								+ "-info.txt");
+						localexport + "/" + key + "/" + this.getName() + "/"
+								+ urls[0] + "-" + key + "-info.txt");
 			}
 		}
 	}
