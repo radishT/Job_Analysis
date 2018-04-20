@@ -13,8 +13,8 @@ public class Test {
 		instance.init("C:/Users/admin/Desktop/BossUrl.txt");
 		System.out.println("urlList初始化完毕!--------------------");
 		instance.buildWorker();
-		//instance.buildWorker();
-		//instance.buildWorker();
+		instance.buildWorker();
+		instance.buildWorker();
 		System.out.println("3只爬虫启动成功");
 		
 		// 启动3个线程后,自己睡眠等待最后一只休眠的爬虫唤醒自己

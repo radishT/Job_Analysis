@@ -166,41 +166,45 @@ public class BOSSCrawlerManager {
 		 * 线程的工作方法
 		 * 	    爬取url对应的
 		 */
-		private void work() throws Exception{
-			String province = vo.getProvince();
-			String city = vo.getCity();
-			String url = vo.getUrl();
-			WebDriverWait wait = new WebDriverWait(driver, 8);
-			// 打开网页
-			driver.get(url);
-			while(true){
-			// 等待加载
-			//wait.until(ExpectedConditions.presenceOfElementLocated(By.id("footer")));
-			wait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("#wrap")));
-			System.out.println("wrap"+"加载完毕,开始爬取内容");
-			// 爬取内容
-			// 先爬取所有的div.job-list div.job-primary
-			List<WebElement> divList = driver.findElementsByCssSelector("div.job-list div.job-primary");
-			for (WebElement jobDiv : divList) {
-				// 得到title salary city experience education company
-				// 标题
-				String title=jobDiv.findElement(By.cssSelector("div.job-title")).getText();
-				// 收入
-				String salary=jobDiv.findElement(By.cssSelector("div.red")).getText();
-				// 企业
-				String company = jobDiv.findElement(By.cssSelector("div.company-text h3")).getText();
-				// 工作经验       学历
-				String text=jobDiv.findElement(By.cssSelector("div.info-primary p")).getText();
-				text=text.replaceAll("\"", " ");
-				StringTokenizer stringTokenizer = new StringTokenizer(text);
-				stringTokenizer.nextToken();
-				String experience=stringTokenizer.nextToken();
-				String education=stringTokenizer.nextToken();
-				// 打印一个单元数据测试
-				System.out.println(title+"\t"+salary+"\t"+company+"\t"+experience+"\t"+education);
-				System.out.printf("%s\t%s\t%s\t%s\t%s\t%s", city,title,salary,company,experience,education);
-			}
-			// 如果有下一页,则点击下一页,否则
+		private void work(){
+			
+			try {
+				String province = vo.getProvince();
+				String city = vo.getCity();
+				String url = vo.getUrl();
+				System.out.println("url:" + url);
+				WebDriverWait wait = new WebDriverWait(driver, 8);
+				// 打开网页
+				driver.get(url);
+				//while (true) {
+					// 等待加载
+					//wait.until(ExpectedConditions.presenceOfElementLocated(By.id("footer")));
+					wait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("#wrap")));
+					// 爬取内容
+					// 先爬取所有的div.job-list div.job-primary
+					List<WebElement> divList = driver.findElementsByCssSelector("div.job-list div.job-primary");
+					for (WebElement jobDiv : divList) {
+						// 得到title salary city experience education company
+						// 标题
+						String title = jobDiv.findElement(By.cssSelector("div.job-title")).getText();
+						// 收入
+						String salary = jobDiv.findElement(By.cssSelector("span.red")).getText();
+						// 企业
+						String company = jobDiv.findElement(By.cssSelector("div.company-text h3")).getText();
+						// 工作经验       学历
+						String text = jobDiv.findElement(By.cssSelector("div.info-primary p")).getText();
+						String experience = text.substring(text.indexOf(" "));
+						String education = text.substring(text.length()-2);
+						// 打印一个单元数据测试
+						System.out
+								.println(title + "\t" + salary + "\t" + company + "\t" + experience + "\t" + education);
+						System.out.printf("title:%s\t%s\t%s\t%s\t%s\t%s", city, title, salary, company, experience,
+								education);
+					}
+					// 如果有下一页,则点击下一页,否则
+				//} 
+			} catch(Exception e){
+				e.printStackTrace();
 			}
 		}
 	}
