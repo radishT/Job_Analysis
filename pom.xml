@@ -68,5 +68,17 @@
 	    <artifactId>guava</artifactId>
 	    <version>23.0</version>
 	</dependency>
+	<!-- fastjson -->
+	<dependency>
+	    <groupId>com.alibaba</groupId>
+	    <artifactId>fastjson</artifactId>
+	    <version>1.2.37</version>
+	</dependency>
+	<!-- 分词库 -->
+	<dependency>
+	    <groupId>org.apache.lucene</groupId>
+	    <artifactId>lucene-core</artifactId>
+	    <version>2.0.0</version>
+	</dependency>
   </dependencies>
 </project>
