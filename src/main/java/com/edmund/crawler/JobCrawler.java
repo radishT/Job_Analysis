@@ -23,14 +23,15 @@ import com.edmund.vo.Job;
  *
  */
 public class JobCrawler {
-	// private static String[] keys = { "java", "c#", "c++", "android", "php" };
-	private static String[] keys = { "android", "c" };
+	// private static String[] keys = { "java", "python", "c++", "android",
+	// "php" };
+	private static String[] keys = { "web" };
 	private static Map<String, List<String>> infos = null;
 
 	private static List<String> cities = null;
 	private static List<String> roots = null;
-	private static String localdriver = null;
-	private static String localexport = null;
+	private static String localdriver = null; // 本地浏览器驱动位置
+	private static String localexport = null; // 本地输出路径
 
 	private static final int THREAD_NUMBER = 5;
 
