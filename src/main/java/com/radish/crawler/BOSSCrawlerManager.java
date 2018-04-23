@@ -24,14 +24,14 @@ import com.radish.vo.BOSSUrlVO;
 public class BOSSCrawlerManager {
 	// 初始化爬取队列,每个VO中的url都是可直接访问的
 	private List<BOSSUrlVO> urlList = new ArrayList<BOSSUrlVO>();
-	// 要爬取的关键词 java python C# C++ linux
-	private String[] keys = new String[] { "java", "python", "C%23", "C%2B%2B", "linux" };
+	// 要爬取的关键词 java python web linux
+	private String[] keys = new String[] { "java", "python", "web", "linux" };
 	// 爬虫间争抢runningCrawler的同步对象
 	private Object obj = new Object();
 	// 所有爬虫爬完后,通过obj通知main线程
 	public Object mainThread = new Object();
 	// 当前仍然在工作的爬虫数
-	public Integer runningCrawler = 0;
+	private Integer runningCrawler = 0;
 
 	private static BOSSCrawlerManager instance = new BOSSCrawlerManager();
 
@@ -81,6 +81,7 @@ public class BOSSCrawlerManager {
 			}
 
 			reader.close();
+			flag=true;
 		} catch (Exception e) {
 			// 如果出异常,返回false
 			return false;
@@ -116,7 +117,7 @@ public class BOSSCrawlerManager {
 	class WorkerThread extends Thread {
 		private BOSSUrlVO vo;
 		private ChromeDriver driver;
-
+		
 		// 构造方法
 		public WorkerThread() {
 			// 初始化浏览器驱动
@@ -157,7 +158,7 @@ public class BOSSCrawlerManager {
 					work();
 				} catch (Exception e) {
 					// 如果爬虫一次工作出现异常
-					System.out.println("");
+					System.out.println(Thread.currentThread().getName()+":-------------爬虫工作异常---------------");
 				}
 			}
 		}
@@ -176,7 +177,7 @@ public class BOSSCrawlerManager {
 				WebDriverWait wait = new WebDriverWait(driver, 8);
 				// 打开网页
 				driver.get(url);
-				//while (true) {
+				while (true) {
 					// 等待加载
 					//wait.until(ExpectedConditions.presenceOfElementLocated(By.id("footer")));
 					wait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("#wrap")));
@@ -196,15 +197,29 @@ public class BOSSCrawlerManager {
 						String experience = text.substring(text.indexOf(" "));
 						String education = text.substring(text.length()-2);
 						// 打印一个单元数据测试
-						System.out
-								.println(title + "\t" + salary + "\t" + company + "\t" + experience + "\t" + education);
-						System.out.printf("title:%s\t%s\t%s\t%s\t%s\t%s", city, title, salary, company, experience,
-								education);
+						System.out.printf("title:%s\t%s\t%s\t%s\t%s\t%s", title, city, salary, company, experience,
+								education+"\r\n");
 					}
+					WebElement nextElement = null;
 					// 如果有下一页,则点击下一页,否则
-				//} 
+					if((nextElement=driver.findElement(By.cssSelector("div.page a.next")))!=null){
+						if(nextElement.getAttribute("class").contains("disabled")){
+							return;
+						}else{
+							nextElement.click();
+						}
+					}else{// 如果没找到就结束了.
+						return;
+					}
+				} 
 			} catch(Exception e){
-				e.printStackTrace();
+				System.out.println("url:"+vo.getUrl()+"error,没有正常爬取完毕");
+				try {
+					Thread.sleep(10*1000);
+				} catch (InterruptedException e1) {
+					System.out.println("sleep失败");
+				}
+				System.out.println("尽快输入验证码");
 			}
 		}
 	}
