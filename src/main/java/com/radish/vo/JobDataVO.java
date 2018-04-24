@@ -22,7 +22,9 @@ public class JobDataVO {
 	// 学历
 	private String education;
 	// 职位要求
-	private String job_request;
+	private String jobRequestMessage;
+	// 打开后可以获取招聘要求的url地址
+	private String jobRequestUrl;
 	// 关键词map
 	private Map<String, Integer> keyMap;
 	
@@ -32,8 +34,7 @@ public class JobDataVO {
 	}
 	
 	public JobDataVO(Integer id, String city, String keyWord, String title, String company, String job, String salary,
-			String experience, String education, String job_request, Map<String, Integer> keyMap) {
-		super();
+			String experience, String education, String jobRequestMessage, Map<String, Integer> keyMap,String jobRequestUrl) {
 		this.id = id;
 		this.city = city;
 		this.keyWord = keyWord;
@@ -43,8 +44,9 @@ public class JobDataVO {
 		this.salary = salary;
 		this.experience = experience;
 		this.education = education;
-		this.job_request = job_request;
+		this.jobRequestMessage = jobRequestMessage;
 		this.keyMap = keyMap;
+		this.jobRequestUrl=jobRequestUrl;
 	}
 
 	/*
@@ -104,12 +106,23 @@ public class JobDataVO {
 	public void setEducation(String education) {
 		this.education = education;
 	}
-	public String getJob_request() {
-		return job_request;
+	
+	public String getJobRequestMessage() {
+		return jobRequestMessage;
 	}
-	public void setJob_request(String job_request) {
-		this.job_request = job_request;
+
+	public void setJobRequestMessage(String jobRequestMessage) {
+		this.jobRequestMessage = jobRequestMessage;
 	}
+
+	public String getJobRequestUrl() {
+		return jobRequestUrl;
+	}
+
+	public void setJobRequestUrl(String jobRequestUrl) {
+		this.jobRequestUrl = jobRequestUrl;
+	}
+
 	public Map<String, Integer> getKeyMap() {
 		return keyMap;
 	}
@@ -121,8 +134,11 @@ public class JobDataVO {
 	public String toString() {
 		return "JobDataVO [id=" + id + ", city=" + city + ", keyWord=" + keyWord + ", title=" + title + ", company="
 				+ company + ", job=" + job + ", salary=" + salary + ", experience=" + experience + ", education="
-				+ education + ", job_request=" + job_request + ", keyMap=" + keyMap + "]";
+				+ education + ", jobRequestMessage=" + jobRequestMessage + ", jobRequestUrl=" + jobRequestUrl
+				+ ", keyMap=" + keyMap + "]";
 	}
+
+	
 	
 	
 }
