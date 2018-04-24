@@ -30,9 +30,8 @@ public class DistributedCrawler {
 		try {
 			Class.forName("com.mysql.jdbc.Driver");
 			// 注意,IP可以填写分布式数据库所在的主机
-			conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/crawler_db?characterEncoding=utf-8",
-					"root", "admin");
-
+			conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/crawler_db?characterEncoding=utf-8", "root",
+					"admin");
 		} catch (Exception e) {
 			System.out.println("数据库连接初始化失败");
 		}

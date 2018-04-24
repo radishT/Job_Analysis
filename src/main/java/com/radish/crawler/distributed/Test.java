@@ -18,7 +18,7 @@ import com.radish.vo.JobDataVO;
 public class Test {
 	private static Connection conn;
 	private static ChromeDriver driver;
-	private  static Integer count = 1; 
+	private static Integer count = 1;
 
 	static {
 		DistributedCrawler crawler = new DistributedCrawler();
@@ -78,6 +78,7 @@ public class Test {
 
 					// 此刻已经拿到vo
 					driver.get(vo.getUrl());
+					Thread.sleep(1500);
 					work(driver, vo);
 				} else {// 如果没查到,程序退出
 					rs.close();
@@ -100,12 +101,12 @@ public class Test {
 
 	}// main
 
-	public static void work(ChromeDriver driver,BOSSUrlVO urlVo){
-		WebDriverWait wait = new WebDriverWait(driver, 8);
+	public static void work(ChromeDriver driver, BOSSUrlVO urlVo) {
+		WebDriverWait wait = new WebDriverWait(driver, 12);
 		try {
-			while (true) {
+			s: while (true) {
 				// 等待加载
-				//wait.until(ExpectedConditions.presenceOfElementLocated(By.id("footer")));
+				// wait.until(ExpectedConditions.presenceOfElementLocated(By.id("footer")));
 				wait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("#wrap")));
 				// 爬取内容
 				// 先爬取所有的div.job-list div.job-primary
@@ -114,40 +115,48 @@ public class Test {
 					// 得到title salary city experience education company
 					// 标题
 					String title = jobDiv.findElement(By.cssSelector("div.job-title")).getText();
-					
-					String requestUrl=jobDiv.findElement(By.cssSelector("h3.name a")).getAttribute("href");
+
+					String requestUrl = jobDiv.findElement(By.cssSelector("h3.name a")).getAttribute("href");
 					// 收入
 					String salary = jobDiv.findElement(By.cssSelector("span.red")).getText();
 					// 企业
 					String company = jobDiv.findElement(By.cssSelector("div.company-text h3")).getText();
-					// 工作经验       学历
+					// 工作经验 学历
 					String text = jobDiv.findElement(By.cssSelector("div.info-primary p")).getText();
+					String city = text.substring(0, text.indexOf(" "));
+					// 如果li的城市和搜索城市不相符,则下个url
+					if (!city.equals(urlVo.getCity()))
+						break s;
+
 					String experience = text.substring(text.indexOf(" "));
-					String education = text.substring(text.length()-2);
-					JobDataVO jobData = new JobDataVO(urlVo.getId(), urlVo.getCity(), urlVo.getKey(), title, company, null, salary, experience, education, null, null,requestUrl);
+					String education = text.substring(text.length() - 2);
+					JobDataVO jobData = new JobDataVO(urlVo.getId(), urlVo.getCity(), urlVo.getKey(), title, company,
+							null, salary, experience, education, null, null, requestUrl);
 					insertData(jobData);
 				}
 				WebElement nextElement = null;
 				// 如果有下一页,则点击下一页,否则
-				if((nextElement=driver.findElement(By.cssSelector("div.page a.next")))!=null){
-					if(nextElement.getAttribute("class").contains("disabled")){
+				if ((nextElement = driver.findElement(By.cssSelector("div.page a.next"))) != null) {
+					if (nextElement.getAttribute("class").contains("disabled")) {
 						return;
-					}else{
+					} else {
 						nextElement.click();
+						Thread.sleep(1000);
 					}
-				}else{// 如果没找到就结束了.
+				} else {// 如果没找到就结束了.
 					return;
 				}
 			}
 		} catch (Exception e) {
 			// 如果这个while出错,比如被屏蔽需要输入验证码
-			System.out.println("需要输入验证码");
+			
+			System.out.println("while 循环出错,可能需要输入验证码");
 			try {
-				Thread.sleep(20*1000);
+				Thread.sleep(20 * 1000);
 			} catch (InterruptedException e1) {
 				System.out.println("sleep 失败");
 			}
-		} 
+		}
 	}// work()
 
 	public static void insertData(JobDataVO dataVO) {
@@ -167,7 +176,7 @@ public class Test {
 			stmt.executeUpdate();
 			conn.commit();
 			stmt.close();
-			System.out.println("插入一条数据,总插入数据数为:" + count++);
+			//System.out.println("插入一条数据,总插入数据数为:" + count++);
 		} catch (Exception e) {
 			try {
 				conn.rollback();
