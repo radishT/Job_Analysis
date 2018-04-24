@@ -7,21 +7,37 @@ package com.radish.vo;
  *
  */
 public class BOSSUrlVO {
+	private Integer id;
 	private String province;
 	private String city;
 	private String url;
 	private String key;
+	private Integer status;
 
 	public BOSSUrlVO() {
 		super();
 	}
 
-	public BOSSUrlVO(String province, String city, String url, String key) {
-		super();
+	public BOSSUrlVO(Integer id, String province, String city, String url, String key, Integer status) {
+		this.id = id;
 		this.province = province;
 		this.city = city;
 		this.key = key;
 		this.url = url.replace("#", this.key);
+		this.status = status;
+	}
+	public BOSSUrlVO(String province, String city, String url, String key) {
+		this.province = province;
+		this.city = city;
+		this.key = key;
+		this.url = url.replace("#", this.key);
+	}
+	public Integer getId() {
+		return id;
+	}
+
+	public void setId(Integer id) {
+		this.id = id;
 	}
 
 	public String getProvince() {
@@ -34,6 +50,14 @@ public class BOSSUrlVO {
 
 	public String getCity() {
 		return city;
+	}
+
+	public Integer getStatus() {
+		return status;
+	}
+
+	public void setStatus(Integer status) {
+		this.status = status;
 	}
 
 	public void setCity(String city) {

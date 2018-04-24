@@ -34,12 +34,195 @@ public class LGDBUtils {
 	}
 
 	/**
+	 * 向数据库中写入需要处理的url
+	 * @param url
+	 */
+	public void writeIntoReadyURL(String url, String keyword) {
+		String sql = "INSERT INTO ready_url (url,state,keyword) VALUES (?,0,?)";
+		try {
+			dbc.getConn().setAutoCommit(false);
+			PreparedStatement pst = dbc.getConn().prepareStatement(sql);
+			pst.setString(1, url);
+			pst.setString(2, keyword);
+			pst.executeUpdate();
+			dbc.getConn().commit();
+			pst.close();
+
+		} catch (SQLException e) {
+			try {
+				dbc.getConn().rollback();
+			} catch (SQLException e1) {
+				e1.printStackTrace();
+			}
+			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * 从数据库中读取未被处理过得url，并将其的状态值改为1,由于需要记录职位对应的关键字，故将keyword也一并取出
+	 * @return
+	 * @throws SQLException 
+	 */
+	public String[] readFromReadyURL() {
+		try {
+			dbc.getConn().setAutoCommit(false);
+		} catch (SQLException e2) {
+			e2.printStackTrace();
+		}
+		String sql = "SELECT id,url,keyword FROM ready_url WHERE state=0 LIMIT 1";
+		String updateSql = "UPDATE ready_url SET state=1 WHERE id=?";
+		String[] infos = null;
+		try {
+			dbc.getConn().setAutoCommit(false);
+			PreparedStatement pst = dbc.getConn().prepareStatement(sql);
+			ResultSet rs = pst.executeQuery();
+			if (rs.next()) {
+				String id = rs.getString(1);
+				String url = rs.getString(2);
+				String keyword = rs.getString(3);
+				infos = new String[2];
+				infos[0] = url;
+				infos[1] = keyword;
+				pst = dbc.getConn().prepareStatement(updateSql);
+				pst.setInt(1, Integer.parseInt(id));
+				pst.executeUpdate();
+				System.out.println("正在处理: " + url);
+			}
+
+			dbc.getConn().commit();
+			rs.close();
+			pst.close();
+
+		} catch (SQLException e) {
+			try {
+				dbc.getConn().rollback();
+			} catch (SQLException e1) {
+				e1.printStackTrace();
+			}
+			e.printStackTrace();
+		}
+		return infos;
+
+	}
+
+	/**
+	 * 处理指定url出现异常后，将其处理状态修改为0
+	 * @param url
+	 */
+	public void restoreReadyURL(String url) {
+		String sql = "UPDATE ready_url SET state=0 WHERE url=? AND state=1";
+		try {
+			dbc.getConn().setAutoCommit(false);
+			PreparedStatement pst = dbc.getConn().prepareStatement(sql);
+			pst = dbc.getConn().prepareStatement(sql);
+			pst.setString(1, url);
+			pst.executeUpdate();
+			dbc.getConn().commit();
+			pst.close();
+			System.out.println("正在回滚: " + url);
+		} catch (SQLException e) {
+			try {
+				dbc.getConn().rollback();
+			} catch (SQLException e1) {
+				e1.printStackTrace();
+			}
+			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * 向数据库中写入需要处理的url
+	 * @param url
+	 */
+	public void writeIntoCityURL(String url) {
+		String sql = "INSERT INTO city_url (url,state) VALUES (?,0)";
+		try {
+			dbc.getConn().setAutoCommit(false);
+			PreparedStatement pst = dbc.getConn().prepareStatement(sql);
+			pst.setString(1, url);
+			pst.executeUpdate();
+			dbc.getConn().commit();
+			pst.close();
+
+		} catch (SQLException e) {
+			try {
+				dbc.getConn().rollback();
+			} catch (SQLException e1) {
+				e1.printStackTrace();
+			}
+			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * 从数据库中读取未被处理过得url，并将其的状态值改为1,由于需要记录职位对应的关键字，故将keyword也一并取出
+	 * @return
+	 */
+	public String readFromCityURL() {
+		String sql = "SELECT id,url FROM city_url WHERE state=0 LIMIT 1";
+		String updateSql = "UPDATE city_url SET state=1 WHERE id=?";
+		String url = null;
+		try {
+			dbc.getConn().setAutoCommit(false);
+			PreparedStatement pst = dbc.getConn().prepareStatement(sql);
+			ResultSet rs = pst.executeQuery();
+			if (rs.next()) {
+				String id = rs.getString(1);
+				url = rs.getString(2);
+				pst = dbc.getConn().prepareStatement(updateSql);
+				pst.setInt(1, Integer.parseInt(id));
+				pst.executeUpdate();
+			}
+
+			dbc.getConn().commit();
+			rs.close();
+			pst.close();
+
+		} catch (SQLException e) {
+			try {
+				dbc.getConn().rollback();
+			} catch (SQLException e1) {
+				e1.printStackTrace();
+			}
+			e.printStackTrace();
+		}
+		return url;
+
+	}
+
+	/**
+	 * 处理指定url出现异常后，将其处理状态修改为0
+	 * @param url
+	 */
+	public void restoreCityURL(String url) {
+		String sql = "UPDATE city_url SET state=0 WHERE url=? AND state=1";
+		try {
+			dbc.getConn().setAutoCommit(false);
+			PreparedStatement pst = dbc.getConn().prepareStatement(sql);
+			pst = dbc.getConn().prepareStatement(sql);
+			pst.setString(1, url);
+			pst.executeUpdate();
+			dbc.getConn().commit();
+			pst.close();
+
+		} catch (SQLException e) {
+			try {
+				dbc.getConn().rollback();
+			} catch (SQLException e1) {
+				e1.printStackTrace();
+			}
+			e.printStackTrace();
+		}
+	}
+
+	/**
 	 * 向数据库中插入一条职位信息记录
 	 * @param job 职位信息对象LGJob
 	 */
 	public void insertLGJob(LGJob job) {
-		String sql = "INSERT INTO lagou (key_word,job,salary,city,experience,education,company,key_words) VALUES (?,?,?,?,?,?,?,?,?)";
+		String sql = "INSERT INTO lagou (key_word,job,salary,city,experience,education,company,key_words) VALUES (?,?,?,?,?,?,?,?)";
 		try {
+			dbc.getConn().setAutoCommit(false);
 			PreparedStatement pst = dbc.getConn().prepareStatement(sql);
 			pst.setString(1, job.getKeyword());
 			pst.setString(2, null);
@@ -51,9 +234,15 @@ public class LGDBUtils {
 			pst.setObject(8, job.getKeywords());
 
 			pst.executeUpdate();
+			dbc.getConn().commit();
 			pst.close();
-
+			System.out.println("正在写入: " + job);
 		} catch (SQLException e) {
+			try {
+				dbc.getConn().rollback();
+			} catch (SQLException e1) {
+				e1.printStackTrace();
+			}
 			e.printStackTrace();
 		}
 
