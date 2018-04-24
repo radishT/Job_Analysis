@@ -9,10 +9,14 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.chrome.ChromeDriver;
+
+import jeasy.analysis.MMAnalyzer;
 
 public class TaskManager {
 	private Connection conn;
@@ -144,6 +148,42 @@ public class TaskManager {
 			System.out.println("根据url获取message失败,可能是需要输入验证码");
 		}
 		return message;
+	}
+
+	public Map<String, Integer> pickMapFromMessage() {
+		Map<String, Integer> message_map = new HashMap<String, Integer>();
+		String sql = "SELECT url_id,message FROM job_message WHERE status=1 ORDER BY url_id LIMIT 1";
+		try {
+			PreparedStatement stmt = conn.prepareStatement(sql);
+			ResultSet rs = stmt.executeQuery();
+			if (rs.wasNull()) {
+				return message_map;
+			} else {
+				rs.next();
+				int urlId = rs.getInt(1);
+				String message = rs.getString(2);
+				MMAnalyzer mm = new MMAnalyzer();
+				String[] keys = mm.segment(message, "|").split("|");
+				for (String key : keys) {
+					if (message_map.containsKey(key)) {
+						message_map.put(key, message_map.get(key) + 1);
+					} else if (key.matches("[a-zA-Z+#]+")) {
+						message_map.put(key, 1);
+					} else {
+						continue;
+					}
+				}
+
+				sql = "UPDATE job_message SET message_map = ? WHERE id=?";
+				stmt = conn.prepareStatement(sql);
+
+			}
+
+		} catch (Exception e) {
+
+			e.printStackTrace();
+		}
+		return message_map;
 	}
 
 }
