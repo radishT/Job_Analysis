@@ -12,7 +12,7 @@ import java.sql.SQLException;
  */
 public class DataBaseConnection {
 	private static String DBDRIVER = "org.gjt.mm.mysql.Driver";
-	private static String DBURL = "jdbc:mysql://localhost:3306/test";
+	private static String DBURL = "jdbc:mysql://10.60.72.28:3306/test";
 	private static String DBUSER = "root";
 	private static String DBPASSWORD = "redhat";
 

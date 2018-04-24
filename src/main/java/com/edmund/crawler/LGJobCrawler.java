@@ -19,7 +19,6 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 
 import com.edmund.utils.DataBaseConnection;
 import com.edmund.utils.LGDBUtils;
-import com.edmund.vo.Job;
 import com.edmund.vo.LGJob;
 
 import jeasy.analysis.MMAnalyzer;
@@ -30,12 +29,11 @@ public class LGJobCrawler {
 	private static String root = "https://www.lagou.com/jobs/list_%KW%?px=default&city=%CT%#filterBox";
 	private static List<String> URLList = new ArrayList<String>();
 	private static String localdriver = null; // 本地浏览器驱动位置
-	private static String localexport = null; // 本地输出路径
 	private DataBaseConnection dbc = new DataBaseConnection();
 	private LGDBUtils utils = new LGDBUtils(dbc);
 
 	private static final String USER_AGENT = "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.181 Safari/537.36";
-	private static final int THREAD_NUMBER = 5;
+	private static final int THREAD_NUMBER = 1;
 
 	/**
 	 * 读取配置文件
@@ -49,20 +47,41 @@ public class LGJobCrawler {
 			e.printStackTrace();
 		}
 		localdriver = property.getProperty("LocalChromedriver");
-		localexport = property.getProperty("LocalExportPath");
 
+	}
+
+	class LGJobCrawlerThread extends Thread {
+		@Override
+		public void run() {
+			while (true) {
+				String[] infos = null;
+				if ((infos = utils.readFromReadyURL()) == null) {
+					try {
+						Thread.sleep(6000);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+				} else {
+					LGJob job = getJobDetails(infos);
+					utils.insertLGJob(job);
+				}
+			}
+		}
 	}
 
 	public static void main(String[] args)
 			throws IOException, InterruptedException {
 		LGJobCrawler lgCrawler = new LGJobCrawler();
-		// lgCrawler.initURLList();
-		// ChromeDriver driver = initBrowser();
-		//
-		// for (String url : URLList) {
-		// lgCrawler.crawJobs(url, driver);
-		// }
-		getJobDetails("https://www.lagou.com/jobs/3544094.html");
+		lgCrawler.initURLList();
+		ChromeDriver driver = initBrowser();
+
+		for (int i = 0; i < THREAD_NUMBER; i++) {
+			new LGJobCrawler().new LGJobCrawlerThread().start();
+		}
+
+		for (String url : URLList) {
+			lgCrawler.crawJobs(url, driver);
+		}
 	}
 
 	/**
@@ -114,40 +133,47 @@ public class LGJobCrawler {
 		return 0;
 	}
 
-	public List<Job> crawJobs(String url, ChromeDriver driver)
+	/**
+	 * 从给定url爬取职位信息
+	 * @param url 网页路径
+	 * @param driver 浏览器驱动
+	 * @return 职位信息列表
+	 * @throws InterruptedException
+	 */
+	public void crawJobs(String url, ChromeDriver driver)
 			throws InterruptedException {
 
 		if (pretreatment(url, driver) == -1) {
-			return null;
+			return;
 		}
 
-		List<Job> jobs = new ArrayList<Job>();
 		while (true) {
 			WebElement list = driver.findElementById("s_position_list");
 			WebElement list_ul = list.findElement(By.tagName("ul"));
 			List<WebElement> positions = list_ul.findElements(By.tagName("li"));
 			for (WebElement webElement : positions) {
-				System.out.println(webElement.getText());
-				// jobs.add(createJobVo(webElement, urls[0], key));
+				String href = webElement.findElement(By.tagName("a"))
+						.getAttribute("href");
+				utils.writeIntoReadyURL(href, whichKey(url));
 			}
 
 			if (nextPage(driver) == -1) {
 				break;
 			}
 		}
-		return jobs;
-
 	}
 
 	/**
-	 * 根据url获取工作的详细信息
-	 * @param url
-	 * @return
+	 * 根据infos数组获取工作的详细信息,infos[0]保存url,infos[1]保存keyword
+	 * @param infos 保存了url和keyword的数组
+	 * @return 职位信息的封装类
 	 */
-	private static LGJob getJobDetails(String url) {
+	private static LGJob getJobDetails(String[] infos) {
 		Document doc = null;
 		LGJob job = null;
+		String url = infos[0];
 		try {
+			// 过滤条件，只允许包含数据的url通过
 			if (url.matches(".*lagou\\.com/jobs/[0-9]+\\..?html")) {
 				doc = Jsoup.connect(url).userAgent(USER_AGENT).get();
 			} else {
@@ -157,13 +183,14 @@ public class LGJobCrawler {
 			e.printStackTrace();
 			return null;
 		}
-		String key = whichKey(url);
-		String[] infos = doc.getElementsByClass("job_request").first().text()
-				.split("/");
-		String salary = infos[0].trim();
-		String city = infos[1].trim();
-		String experience = infos[2].trim();
-		String education = infos[3].trim();
+		String key = infos[1];
+		System.out.println(doc);
+		String[] job_request = doc.getElementsByClass("job_request").first()
+				.text().split("/");
+		String salary = job_request[0].trim();
+		String city = job_request[1].trim();
+		String experience = job_request[2].trim();
+		String education = job_request[3].trim();
 
 		String company = doc.getElementsByClass("company").first().text();
 		String keywords = doc.getElementsByClass("job_bt").first()
@@ -171,19 +198,26 @@ public class LGJobCrawler {
 
 		job = new LGJob(null, key, null, salary, city, experience, education,
 				company, getKeywordsMap(keywords));
-		System.out.println(job);
+
 		return job;
 	}
 
+	/**
+	 * 根据传入的文本进行分词，取出其中的英文单词,并且将其出现的次数按照map的格式保存
+	 * @param keywords 需要分词的文本
+	 * @return 分词后的单词和其出现的次数
+	 */
 	private static Map<String, Integer> getKeywordsMap(String keywords) {
 		Map<String, Integer> kwMap = new HashMap<String, Integer>();
 		MMAnalyzer mm = new MMAnalyzer();
+		MMAnalyzer.addWord("C#");
+		MMAnalyzer.addWord("c#");
 		try {
 			String[] kwStrs = mm.segment(keywords, "|").split("\\|");
 			for (String kwStr : kwStrs) {
-				// if (!kwStr.matches("[a-zA-Z/#\\\\]+")) {
-				// continue;
-				// }
+				if (!kwStr.matches("[a-zA-Z/#\\\\]+")) {
+					continue;
+				}
 				if (kwMap.containsKey(kwStr)) {
 					kwMap.put(kwStr, kwMap.get(kwStr) + 1);
 				} else {
@@ -238,32 +272,4 @@ public class LGJobCrawler {
 		}
 		return null;
 	}
-
-	/**
-	 * 创建职位信息的封装类
-	 * @param webElement
-	 * @param city 城市信息
-	 * @param key 关键字
-	 * @return 封装职位信息的Job对象
-	 */
-	private static Job createJobVo(WebElement webElement, String city,
-			String key) {
-		String title = webElement.findElement(By.className("job_name"))
-				.getText();
-		String job_name = webElement.findElement(By.className("cate"))
-				.getText();
-		String salary = webElement.findElement(By.className("job_salary"))
-				.getText();
-		String company = webElement.findElement(By.className("comp_name"))
-				.getText();
-		String education = webElement.findElement(By.className("xueli"))
-				.getText();
-		String experience = webElement.findElement(By.className("jingyan"))
-				.getText();
-
-		Job job = new Job(null, city, key, title, salary.split("元/月")[0],
-				company.split(" ")[0], job_name, education, experience);
-		return job;
-	}
-
 }

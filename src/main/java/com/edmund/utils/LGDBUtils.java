@@ -34,12 +34,73 @@ public class LGDBUtils {
 	}
 
 	/**
+	 * 向数据库中写入需要处理的url
+	 * @param url
+	 */
+	public void writeIntoReadyURL(String url, String keyword) {
+		String sql = "INSERT INTO ready_url (url,state,keyword) VALUES (?,0,?)";
+		try {
+			dbc.getConn().setAutoCommit(false);
+			PreparedStatement pst = dbc.getConn().prepareStatement(sql);
+			pst.setString(1, url);
+			pst.setString(2, keyword);
+			pst.executeUpdate();
+			dbc.getConn().commit();
+			pst.close();
+
+		} catch (SQLException e) {
+			try {
+				dbc.getConn().rollback();
+			} catch (SQLException e1) {
+				e1.printStackTrace();
+			}
+			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * 从数据库中读取未被处理过得url，并将其的状态值改为1,由于需要记录职位对应的关键字，故将keyword也一并取出
+	 * @return
+	 */
+	public String[] readFromReadyURL() {
+		String sql = "SELECT id,url,keyword FROM ready_url WHERE state=0 LIMIT 1";
+		String updateSql = "UPDATE ready_url SET state=1 WHERE id=?";
+		String[] infos = null;
+		try {
+			dbc.getConn().setAutoCommit(false);
+			PreparedStatement pst = dbc.getConn().prepareStatement(sql);
+			ResultSet rs = pst.executeQuery();
+			if (rs.next()) {
+				String id = rs.getString(1);
+				String url = rs.getString(2);
+				String keyword = rs.getString(3);
+				infos = new String[2];
+				infos[0] = url;
+				infos[1] = keyword;
+				pst = dbc.getConn().prepareStatement(updateSql);
+				pst.setInt(1, Integer.parseInt(id));
+				pst.executeUpdate();
+			}
+
+			dbc.getConn().commit();
+			rs.close();
+			pst.close();
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return infos;
+
+	}
+
+	/**
 	 * 向数据库中插入一条职位信息记录
 	 * @param job 职位信息对象LGJob
 	 */
 	public void insertLGJob(LGJob job) {
-		String sql = "INSERT INTO lagou (key_word,job,salary,city,experience,education,company,key_words) VALUES (?,?,?,?,?,?,?,?,?)";
+		String sql = "INSERT INTO lagou (key_word,job,salary,city,experience,education,company,key_words) VALUES (?,?,?,?,?,?,?,?)";
 		try {
+			dbc.getConn().setAutoCommit(false);
 			PreparedStatement pst = dbc.getConn().prepareStatement(sql);
 			pst.setString(1, job.getKeyword());
 			pst.setString(2, null);
@@ -51,9 +112,15 @@ public class LGDBUtils {
 			pst.setObject(8, job.getKeywords());
 
 			pst.executeUpdate();
+			dbc.getConn().commit();
 			pst.close();
 
 		} catch (SQLException e) {
+			try {
+				dbc.getConn().rollback();
+			} catch (SQLException e1) {
+				e1.printStackTrace();
+			}
 			e.printStackTrace();
 		}
 
