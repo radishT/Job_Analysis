@@ -4,11 +4,14 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
+import java.sql.Blob;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -82,11 +85,11 @@ public class TaskManager {
 					conn.commit();
 					return;
 				} else {// 如果有,指针下移
-					System.out.println("查到一条记录");
+					// System.out.println("查到一条记录");
 					rs.next();
 					int urlId = rs.getInt(1);
 					String url = rs.getString(2);
-					System.out.println("url_id:" + urlId + "url:" + url);
+					// System.out.println("url_id:" + urlId + "url:" + url);
 					sql = "UPDATE job_message SET status = 1 WHERE url_id = ?";
 					stmt = conn.prepareStatement(sql);
 					stmt.setInt(1, urlId);
@@ -150,40 +153,126 @@ public class TaskManager {
 		return message;
 	}
 
-	public Map<String, Integer> pickMapFromMessage() {
-		Map<String, Integer> message_map = new HashMap<String, Integer>();
-		String sql = "SELECT url_id,message FROM job_message WHERE status=1 ORDER BY url_id LIMIT 1";
+	/**
+	 * 方法的出口,条件是没有status=1 而且有message了
+	 */
+	public void pickMapFromMessage() {
+		s: while (true) {
+			try {
+				conn.setAutoCommit(false);
+			} catch (SQLException e1) {
+				System.out.println("设置自动提交false失败");
+			}
+			Map<String, Integer> message_map = new HashMap<String, Integer>();
+			String sql = "SELECT url_id,message FROM job_message WHERE message IS NOT NULL AND status=1 ORDER BY url_id LIMIT 1";
+			try {
+				PreparedStatement stmt = conn.prepareStatement(sql);
+				ResultSet rs = stmt.executeQuery();
+				conn.commit();
+				if (rs.wasNull()) {
+					// 方法的出口,条件是没有status=1 而且有message了
+					return;
+				} else {
+					rs.next();
+					int urlId = rs.getInt(1);
+					// 如果查到了记录,就把相对应的记录的status设置为2
+					try {
+						sql = "update job_message set status=2 where url_id=" + urlId;
+						stmt = conn.prepareStatement(sql);
+						stmt.executeUpdate();
+						conn.commit();
+					} catch (Exception e1) {
+						System.out.println("设置message处理完毕的status=2失败,url_id:" + urlId);
+						try {
+							conn.rollback();
+						} catch (Exception e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+
+					}
+					String message = rs.getString(2);
+					MMAnalyzer mm = new MMAnalyzer();
+					String[] keys = mm.segment(message, "|").split("\\|");
+					for (String key : keys) {
+						if (key.matches("[a-zA-Z+#]+")) {
+							// 如果符合英文,但是已有,则value+1
+							if (message_map.containsKey(key)) {
+								message_map.put(key, message_map.get(key) + 1);
+							} else {// 如果不包含
+								message_map.put(key, 1);
+							}
+						}
+					}
+
+					try {
+						sql = "UPDATE job_message SET message_map = ? WHERE url_id=?";
+						stmt = conn.prepareStatement(sql);
+						stmt.setObject(1, message_map);
+						stmt.setInt(2, urlId);
+						stmt.executeUpdate();
+						conn.commit();
+					} catch (Exception e) {
+						conn.rollback();
+						System.out.println("message_map写入失败,url_id:" + urlId);
+					}
+				}
+			} catch (Exception e) {
+				try {
+					conn.rollback();
+				} catch (SQLException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				e.printStackTrace();
+				continue s;
+			}
+		}
+	}
+
+	public Map<String, Integer> readMap() {
+
+		String sql = "SELECT message_map FROM job_message WHERE message IS NOT NULL ORDER BY url_id LIMIT 1";
 		try {
 			PreparedStatement stmt = conn.prepareStatement(sql);
 			ResultSet rs = stmt.executeQuery();
-			if (rs.wasNull()) {
-				return message_map;
-			} else {
-				rs.next();
-				int urlId = rs.getInt(1);
-				String message = rs.getString(2);
-				MMAnalyzer mm = new MMAnalyzer();
-				String[] keys = mm.segment(message, "|").split("|");
-				for (String key : keys) {
-					if (message_map.containsKey(key)) {
-						message_map.put(key, message_map.get(key) + 1);
-					} else if (key.matches("[a-zA-Z+#]+")) {
-						message_map.put(key, 1);
-					} else {
-						continue;
-					}
-				}
+			// System.out.println("rs.size" + rs.wasNull());
+			rs.next();
+			Blob message_map = rs.getBlob(1);
+			ObjectInputStream objIs = new ObjectInputStream(message_map.getBinaryStream());
+			Map<String, Integer> map = (Map<String, Integer>) objIs.readObject();
+			// Set<String> keySet = map.keySet();
+			// for (String key : keySet) {
+			// System.out.println("key:" + key + " value:" + map.get(key));
+			// }
 
-				sql = "UPDATE job_message SET message_map = ? WHERE id=?";
-				stmt = conn.prepareStatement(sql);
-
-			}
+			// 一定要考虑map为空的情况
 
 		} catch (Exception e) {
-
 			e.printStackTrace();
 		}
-		return message_map;
+		return null;
 	}
 
+	public void combineMaps() {
+		while (true) {
+			String sql = "SELECT message_map FROM job_message WHERE key_word='java' AND message_map IS NOT NULL ORDER BY url_id LIMIT 1";
+			try {
+				PreparedStatement stmt = conn.prepareStatement(sql);
+				ResultSet rs = stmt.executeQuery();
+				if (rs.wasNull()) {
+					return;
+				}
+				rs.next();
+				Blob message_map = rs.getBlob(1);
+				ObjectInputStream objIs = new ObjectInputStream(message_map.getBinaryStream());
+				Map<String, Integer> map = (Map<String, Integer>) objIs.readObject();
+				List<Map<String, Integer>> mapList = new ArrayList<Map<String, Integer>>();
+				mapList.add(map);
+
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+	}
 }
