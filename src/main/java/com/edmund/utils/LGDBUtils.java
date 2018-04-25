@@ -16,6 +16,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.edmund.vo.LGJob;
 
@@ -252,11 +253,12 @@ public class LGDBUtils {
 	 * 读取数据库中的所有职位信息记录,并封装为对象列表
 	 * @return 职位信息对象列表
 	 */
-	public List<LGJob> getLGJob() {
-		String sql = "SELECT key_word,job,salary,city,experience,education,company,key_words FROM lagou";
+	public List<LGJob> getLGJob(String keyword) {
+		String sql = "SELECT key_word,job,salary,city,experience,education,company,key_words FROM lagou WHERE key_word=?";
 		List<LGJob> jobs = new ArrayList<LGJob>();
 		try {
 			PreparedStatement pst = dbc.getConn().prepareStatement(sql);
+			pst.setString(1, keyword);
 			ResultSet rs = pst.executeQuery();
 			while (rs.next()) {
 				Blob kwBlob = rs.getBlob(8);
@@ -281,6 +283,30 @@ public class LGDBUtils {
 		}
 
 		return jobs;
+	}
+
+	/**
+	 * 将分析报告写入到文件中
+	 * @param kwMap
+	 * @param filepath
+	 * @throws FileNotFoundException
+	 */
+	public static void writeToFile(Map<String, Integer> kwMap,
+			String filepath) {
+		int i = 1;
+		try {
+			PrintWriter pw = new PrintWriter(
+					new FileOutputStream(new File(filepath), true));
+			Set<String> keyset = kwMap.keySet();
+			for (String key : keyset) {
+				pw.println(key + "\t" + kwMap.get(key));
+				System.out.println("已处理: " + i++);
+			}
+			pw.flush();
+			pw.close();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
 	}
 
 	/**

@@ -22,9 +22,15 @@ import com.edmund.vo.LGJob;
 
 import jeasy.analysis.MMAnalyzer;
 
+/**
+ * 拉钩网爬虫类
+ * 现在用于从city_url表中读取需要处理的所有url,然后将抓取到的所有href保存到ready_url表中
+ * @author Edmund
+ *
+ */
 public class LGJobCrawler {
 	private static String[] keys = { "web", "java", "python", "c++", "c#",
-			"android" };
+			"android", "linux" };
 	private static String root = "https://www.lagou.com/jobs/list_%KW%?px=default&city=%CT%#filterBox";
 
 	private static String localdriver = null; // 本地浏览器驱动位置
