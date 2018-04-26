@@ -68,6 +68,10 @@ public class TaskManager {
 		}
 	}
 
+	/**
+	 * 爬虫获取数据表中的url 爬取 message 取出url,status置为1
+	 * 
+	 */
 	public void startCrawler() {
 		try {// 设置事务不自动提交
 			conn.setAutoCommit(false);
@@ -97,14 +101,13 @@ public class TaskManager {
 					conn.commit();
 					// url ---> message 此处是getBossMessage() 拉钩的方法为
 					String message = null;
-					int reTry = 0;
+					// int reTry = 0;
 					// 如果得message失败,就重试,直到重试2次
-					while ((message = getBossMessage(url)) == null && reTry < 2) {
-						//
-						reTry++;
-					}
+					// while ((message = getBossMessage(url)) == null && reTry <2) {
+					// reTry++;
+					// }
 					// 如果重试2次还=null,放弃这个url
-					if (message == null) {
+					if ((message = getBossMessage(url)) == null) {
 						System.out.println("死活得不到这个message,不要了 urlID:" + urlId);
 						continue s;
 					}
@@ -124,7 +127,6 @@ public class TaskManager {
 				try {
 					conn.rollback();
 				} catch (SQLException e1) {
-					// TODO Auto-generated catch block
 					e1.printStackTrace();
 				}
 				continue s;
@@ -145,7 +147,6 @@ public class TaskManager {
 			try {
 				Thread.sleep(20 * 1000);
 			} catch (InterruptedException e1) {
-				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
 			System.out.println("根据url获取message失败,可能是需要输入验证码");
@@ -164,13 +165,13 @@ public class TaskManager {
 				System.out.println("设置自动提交false失败");
 			}
 			Map<String, Integer> message_map = new HashMap<String, Integer>();
-			String sql = "SELECT url_id,message FROM job_message WHERE message IS NOT NULL AND status=1 ORDER BY url_id LIMIT 1";
+			String sql = "SELECT url_id,message FROM job_message WHERE status=1 ORDER BY url_id LIMIT 1";
 			try {
 				PreparedStatement stmt = conn.prepareStatement(sql);
 				ResultSet rs = stmt.executeQuery();
 				conn.commit();
 				if (rs.wasNull()) {
-					// 方法的出口,条件是没有status=1 而且有message了
+					// 方法的出口,条件是没有status=1的记录
 					return;
 				} else {
 					rs.next();
@@ -186,7 +187,6 @@ public class TaskManager {
 						try {
 							conn.rollback();
 						} catch (Exception e) {
-							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
 
@@ -195,7 +195,7 @@ public class TaskManager {
 					MMAnalyzer mm = new MMAnalyzer();
 					String[] keys = mm.segment(message, "|").split("\\|");
 					for (String key : keys) {
-						if (key.matches("[a-zA-Z+#]+")) {
+						if (key.matches("[a-zA-Z/#\\\\]+")) {
 							// 如果符合英文,但是已有,则value+1
 							if (message_map.containsKey(key)) {
 								message_map.put(key, message_map.get(key) + 1);
@@ -221,7 +221,6 @@ public class TaskManager {
 				try {
 					conn.rollback();
 				} catch (SQLException e1) {
-					// TODO Auto-generated catch block
 					e1.printStackTrace();
 				}
 				e.printStackTrace();
