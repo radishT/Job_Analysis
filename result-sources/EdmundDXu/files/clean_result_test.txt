@@ -1,0 +1,11 @@
+# 数据清理结束后用于检查是否有漏网之鱼
+SELECT
+	*
+FROM
+	job_data_result
+WHERE
+	min_experience < 0
+OR min_education < 0
+OR min_salary = 0
+OR max_salary = 0
+OR avg_salary = 0;
