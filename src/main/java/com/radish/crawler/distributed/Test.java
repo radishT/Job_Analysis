@@ -50,22 +50,24 @@ public class Test {
 						+ "WHERE status=0 order by id limit 1 ";
 				PreparedStatement stmt = conn.prepareStatement(sql);
 				ResultSet rs = stmt.executeQuery();
-				System.out.println("select 执行");
+				//System.out.println("select 执行");
+				//System.out.println(rs.wasNull());
+				//System.out.println("next():" + rs.next());
 				// 查到东西
-				if (!rs.wasNull()) {
+				if (rs.next()) {
 					System.out.println("查到了一个对象");
 					// 取出到vo对象
 					BOSSUrlVO vo = null;
-					while (rs.next()) {
-						int id = rs.getInt(1);
-						String province = rs.getString(2);
-						String city = rs.getString(3);
-						String url = rs.getString(4);
-						System.out.println("url----" + url);
-						String keyWord = rs.getString(5);
-						int status = rs.getInt(6);
-						vo = new BOSSUrlVO(id, province, city, url, keyWord, status);
-					}
+
+					int id = rs.getInt(1);
+					String province = rs.getString(2);
+					String city = rs.getString(3);
+					String url = rs.getString(4);
+					System.out.println("url----" + url);
+					String keyWord = rs.getString(5);
+					int status = rs.getInt(6);
+					vo = new BOSSUrlVO(id, province, city, url, keyWord, status);
+
 					// 就修改status = 1
 					sql = "UPDATE url_list set status =1 where id=" + vo.getId();
 					stmt = conn.prepareStatement(sql);
@@ -149,7 +151,7 @@ public class Test {
 			}
 		} catch (Exception e) {
 			// 如果这个while出错,比如被屏蔽需要输入验证码
-			
+
 			System.out.println("while 循环出错,可能需要输入验证码");
 			try {
 				Thread.sleep(20 * 1000);
@@ -176,7 +178,7 @@ public class Test {
 			stmt.executeUpdate();
 			conn.commit();
 			stmt.close();
-			//System.out.println("插入一条数据,总插入数据数为:" + count++);
+			// System.out.println("插入一条数据,总插入数据数为:" + count++);
 		} catch (Exception e) {
 			try {
 				conn.rollback();
