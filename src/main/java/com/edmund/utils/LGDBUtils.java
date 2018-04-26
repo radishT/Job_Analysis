@@ -93,7 +93,6 @@ public class LGDBUtils {
 			dbc.getConn().commit();
 			rs.close();
 			pst.close();
-
 		} catch (SQLException e) {
 			try {
 				dbc.getConn().rollback();
@@ -144,7 +143,6 @@ public class LGDBUtils {
 			pst.executeUpdate();
 			dbc.getConn().commit();
 			pst.close();
-
 		} catch (SQLException e) {
 			try {
 				dbc.getConn().rollback();
@@ -178,7 +176,6 @@ public class LGDBUtils {
 			dbc.getConn().commit();
 			rs.close();
 			pst.close();
-
 		} catch (SQLException e) {
 			try {
 				dbc.getConn().rollback();
@@ -205,7 +202,6 @@ public class LGDBUtils {
 			pst.executeUpdate();
 			dbc.getConn().commit();
 			pst.close();
-
 		} catch (SQLException e) {
 			try {
 				dbc.getConn().rollback();

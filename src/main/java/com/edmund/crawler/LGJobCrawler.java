@@ -2,13 +2,9 @@ package com.edmund.crawler;
 
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebElement;
@@ -18,27 +14,21 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 
 import com.edmund.utils.DataBaseConnection;
 import com.edmund.utils.LGDBUtils;
-import com.edmund.vo.LGJob;
-
-import jeasy.analysis.MMAnalyzer;
 
 /**
  * 拉钩网爬虫类
  * 现在用于从city_url表中读取需要处理的所有url,然后将抓取到的所有href保存到ready_url表中
+ * 爬虫处理阶段2
  * @author Edmund
  *
  */
 public class LGJobCrawler {
 	private static String[] keys = { "web", "java", "python", "c++", "c#",
 			"android", "linux" };
-	private static String root = "https://www.lagou.com/jobs/list_%KW%?px=default&city=%CT%#filterBox";
 
 	private static String localdriver = null; // 本地浏览器驱动位置
 	private DataBaseConnection dbc = new DataBaseConnection();
 	private LGDBUtils utils = new LGDBUtils(dbc);
-
-	private static final String USER_AGENT = "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.181 Safari/537.36";
-	private static final int THREAD_NUMBER = 1;
 
 	/**
 	 * 读取配置文件
@@ -141,85 +131,6 @@ public class LGJobCrawler {
 	}
 
 	/**
-	 * 根据infos数组获取工作的详细信息,infos[0]保存url,infos[1]保存keyword
-	 * @param infos 保存了url和keyword的数组
-	 * @return 职位信息的封装类
-	 */
-	private LGJob getJobDetails(String[] infos) {
-		Document doc = null;
-		LGJob job = null;
-		String url = infos[0];
-		try {
-			// 过滤条件，只允许包含数据的url通过
-			if (url.matches(".*lagou\\.com/jobs/[0-9]+\\..?html")) {
-				doc = Jsoup.connect(url).userAgent(USER_AGENT).get();
-			} else {
-				return null;
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
-			return null;
-		}
-		String key = infos[1];
-		String[] job_request = null;
-		try {
-			job_request = doc.getElementsByClass("job_request").first().text()
-					.split("/");
-		} catch (Exception e) {
-			restart(url);
-			e.printStackTrace();
-		}
-		String salary = job_request[0].trim();
-		String city = job_request[1].trim();
-		String experience = job_request[2].trim();
-		String education = job_request[3].trim();
-
-		String company = doc.getElementsByClass("company").first().text();
-		String keywords = doc.getElementsByClass("job_bt").first()
-				.getElementsByTag("div").text();
-
-		job = new LGJob(null, key, null, salary, city, experience, education,
-				company, getKeywordsMap(keywords));
-
-		return job;
-	}
-
-	/**
-	 * 根据infos数组获取工作的详细信息,infos[0]保存url,infos[1]保存keyword
-	 * @param infos 保存了url和keyword的数组
-	 * @return 职位信息的封装类
-	 */
-	private LGJob getJobDetails_Dynamic(String[] infos, ChromeDriver driver) {
-		LGJob job = null;
-		String url = infos[0];
-		// 过滤条件，只允许包含数据的url通过
-		if (url.matches(".*lagou\\.com/jobs/[0-9]+\\..?html")) {
-			if (pretreatment(url, driver) == -1) {
-				return null;
-			}
-			String key = infos[1];
-			String[] job_request = driver.findElementByClassName("job_request")
-					.getText().split("/");
-			String salary = job_request[0].trim();
-			String city = job_request[1].trim();
-			String experience = job_request[2].trim();
-			String education = job_request[3].trim();
-
-			String company = driver.findElementByClassName("company").getText();
-			String keywords = driver.findElementByClassName("job_bt")
-					.findElement(By.tagName("div")).getText();
-
-			job = new LGJob(null, key, null, salary, city, experience,
-					education, company, getKeywordsMap(keywords));
-
-		} else {
-			return null;
-		}
-
-		return job;
-	}
-
-	/**
 	 * 处理url出现异常时，恢复该url在数据库中的状态，并且休息10秒钟
 	 * @param url
 	 */
@@ -231,34 +142,6 @@ public class LGJobCrawler {
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
-	}
-
-	/**
-	 * 根据传入的文本进行分词，取出其中的英文单词,并且将其出现的次数按照map的格式保存
-	 * @param keywords 需要分词的文本
-	 * @return 分词后的单词和其出现的次数
-	 */
-	private static Map<String, Integer> getKeywordsMap(String keywords) {
-		Map<String, Integer> kwMap = new HashMap<String, Integer>();
-		MMAnalyzer mm = new MMAnalyzer();
-		MMAnalyzer.addWord("C#");
-		MMAnalyzer.addWord("c#");
-		try {
-			String[] kwStrs = mm.segment(keywords, "|").split("\\|");
-			for (String kwStr : kwStrs) {
-				if (!kwStr.matches("[a-zA-Z/#\\\\]+")) {
-					continue;
-				}
-				if (kwMap.containsKey(kwStr)) {
-					kwMap.put(kwStr, kwMap.get(kwStr) + 1);
-				} else {
-					kwMap.put(kwStr, 1);
-				}
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return kwMap;
 	}
 
 	/**

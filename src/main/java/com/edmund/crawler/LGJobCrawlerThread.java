@@ -24,6 +24,7 @@ import jeasy.analysis.MMAnalyzer;
 /**
  * 多线程静态爬取职位信息的线程类
  * 现在用于从ready_url表中读取出需要处理的url,然后将处理结果存入lagou表中
+ * 爬虫处理阶段3
  * @author Edmund
  *
  */
@@ -37,7 +38,6 @@ class LGJobCrawlerThread extends Thread {
 	private static String localexport = null; // 本地输出路径
 
 	private static final String USER_AGENT = "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.181 Safari/537.36";
-	private static final int THREAD_NUMBER = 2;
 
 	/**
 	 * 读取配置文件
@@ -69,7 +69,6 @@ class LGJobCrawlerThread extends Thread {
 	 * 合并数据库中所有条目的Map集合,整合为一个Map集合,并输出到本地文件系统中
 	 */
 	private void merge() {
-		int i = 1;
 		for (String keyword : keys) {
 			Map<String, Integer> kwMerge = new HashMap<String, Integer>();
 			List<LGJob> jobs = utils.getLGJob(keyword);

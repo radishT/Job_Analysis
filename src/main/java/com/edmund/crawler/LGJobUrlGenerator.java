@@ -9,6 +9,7 @@ import com.edmund.vo.LGJob;
 
 /**
  * 用于根据关键字和城市来生成所有需要处理的url,并存入city_url表中
+ * 爬虫处理阶段1
  * @author Edmund
  *
  */
