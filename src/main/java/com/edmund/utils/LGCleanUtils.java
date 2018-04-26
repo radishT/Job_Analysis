@@ -1,6 +1,5 @@
 package com.edmund.utils;
 
-import java.sql.Blob;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -90,8 +89,8 @@ public class LGCleanUtils {
 	 * @param data_from 0表示清洗拉勾网数据,1表示清洗BOSS网数据
 	 */
 	public void JobClean(int data_from) {
-		String query_sql = "SELECT id,key_word,job,salary,province,city,experience,education,company,key_words FROM lagou";
-		String insert_sql = "INSERT INTO job_data_result(data_from,province,city,key_word,company_or_team,min_salary,max_salary,avg_salary,min_experience,min_education,key_words_map) VALUES(?,?,?,?,?,?,?,?,?,?,?)";
+		String query_sql = "SELECT id,key_word,job,salary,province,city,experience,education,company FROM lagou";
+		String insert_sql = "INSERT INTO job_data_result(data_from,province,city,key_word,company_or_team,min_salary,max_salary,avg_salary,min_experience,min_education) VALUES(?,?,?,?,?,?,?,?,?,?)";
 		try {
 			PreparedStatement pst = dbc.getConn().prepareStatement(query_sql);
 			ResultSet rs = pst.executeQuery();
@@ -105,7 +104,6 @@ public class LGCleanUtils {
 				String experience = rs.getString(7);
 				String education = rs.getString(8);
 				String company_or_team = rs.getString(9);
-				Blob key_words = rs.getBlob(10);
 
 				int min_education = educationClean(education);
 				int min_experience = experienceClean(experience);
@@ -125,7 +123,6 @@ public class LGCleanUtils {
 				pst.setInt(8, avg_salary);
 				pst.setInt(9, min_experience);
 				pst.setInt(10, min_education);
-				pst.setBlob(11, key_words);
 
 				pst.executeUpdate();
 			}
