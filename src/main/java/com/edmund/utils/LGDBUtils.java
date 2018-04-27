@@ -318,6 +318,29 @@ public class LGDBUtils {
 	}
 
 	/**
+	 * 将分析报告输出到mysql中
+	 * @param kwMap 经过merge后生成的map
+	 * @param key_word 该map对应的关键词
+	 */
+	public void writeKeyMapToMysql(Map<String, Integer> kwMap,
+			String key_word) {
+		String sql = "INSERT INTO key_map_export(word,value,key_word) VALUES(?,?,?)";
+		try {
+			Set<String> keyset = kwMap.keySet();
+			for (String key : keyset) {
+				PreparedStatement pst = dbc.getConn().prepareStatement(sql);
+				pst.setString(1, key);
+				pst.setInt(2, kwMap.get(key));
+				pst.setString(3, key_word);
+				pst.executeUpdate();
+				pst.close();
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+
+	/**
 	 * 将分析报告写入到文件中
 	 * @param kwMap
 	 * @param filepath

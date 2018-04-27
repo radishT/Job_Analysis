@@ -1,11 +1,8 @@
 package com.edmund.crawler;
 
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 
 import com.edmund.utils.DataBaseConnection;
@@ -23,20 +20,6 @@ public class KeyMapMerger {
 	private LGDBUtils utils = new LGDBUtils(dbc);
 	private static String[] keys = { "web", "java", "python", "c++", "c#",
 			"android", "linux" };
-	private static String localexport = null; // 本地输出路径
-	/**
-	 * 读取配置文件
-	 */
-	static {
-		Properties property = new Properties();
-		try {
-			property.load(new FileInputStream(
-					"./src/main/java/com/edmund/properties"));
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		localexport = property.getProperty("LocalExportPath");
-	}
 
 	public static void main(String[] args) {
 		new KeyMapMerger().merge();
@@ -77,8 +60,7 @@ public class KeyMapMerger {
 					}
 				}
 			}
-			LGDBUtils.writeToFile(kwMerge,
-					localexport + "/" + keyword + ".txt");
+			utils.writeKeyMapToMysql(kwMerge, keyword);
 		}
 		dbc.close();
 	}
