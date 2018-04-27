@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.edmund.vo.KeyMap;
 import com.edmund.vo.LGJob;
 
 /**
@@ -279,6 +280,41 @@ public class LGDBUtils {
 		}
 
 		return jobs;
+	}
+
+	/**
+	 * 读取数据库中的所有关键字图,并封装成KeyMap对象,保存到KeyMap列表中
+	 * @return KeyMap列表
+	 */
+	public List<KeyMap> getKeyMap(String keyword) {
+		String sql = "SELECT id,key_word,key_words FROM lagou WHERE key_word=?";
+		List<KeyMap> kmaps = new ArrayList<KeyMap>();
+		try {
+			PreparedStatement pst = dbc.getConn().prepareStatement(sql);
+			pst.setString(1, keyword);
+			ResultSet rs = pst.executeQuery();
+			while (rs.next()) {
+				Blob kwBlob = rs.getBlob(3);
+				ObjectInputStream objIn = new ObjectInputStream(
+						kwBlob.getBinaryStream());
+				Map<String, Integer> keywords = (Map<String, Integer>) objIn
+						.readObject();
+				KeyMap kmap = new KeyMap(rs.getInt(1), rs.getString(2),
+						keywords);
+				kmaps.add(kmap);
+				objIn.close();
+			}
+			rs.close();
+			pst.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		}
+
+		return kmaps;
 	}
 
 	/**

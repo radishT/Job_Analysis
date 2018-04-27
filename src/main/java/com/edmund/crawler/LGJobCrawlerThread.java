@@ -3,10 +3,8 @@ package com.edmund.crawler;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -32,10 +30,8 @@ class LGJobCrawlerThread extends Thread {
 
 	private DataBaseConnection dbc = new DataBaseConnection();
 	private LGDBUtils utils = new LGDBUtils(dbc);
-	private static String[] keys = { "web", "java", "python", "c++", "c#",
-			"android", "linux" };
+
 	private static String localdriver = null; // 本地浏览器驱动位置
-	private static String localexport = null; // 本地输出路径
 
 	private static final String USER_AGENT = "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.181 Safari/537.36";
 
@@ -51,8 +47,6 @@ class LGJobCrawlerThread extends Thread {
 			e.printStackTrace();
 		}
 		localdriver = property.getProperty("LocalChromedriver");
-		localexport = property.getProperty("LocalExportPath");
-
 	}
 
 	public static void main(String[] args) throws InterruptedException {
@@ -60,46 +54,6 @@ class LGJobCrawlerThread extends Thread {
 		// new LGJobCrawlerThread().start();
 		// Thread.sleep(5000);
 		// }
-		LGJobCrawlerThread t = new LGJobCrawlerThread();
-		t.merge();
-
-	}
-
-	/**
-	 * 合并数据库中所有条目的Map集合,整合为一个Map集合,并输出到本地文件系统中
-	 */
-	private void merge() {
-		for (String keyword : keys) {
-			Map<String, Integer> kwMerge = new HashMap<String, Integer>();
-			List<LGJob> jobs = utils.getLGJob(keyword);
-			for (LGJob job : jobs) {
-				Map<String, Integer> kwMap = job.getKeywords();
-				Set<String> keyset = kwMap.keySet();
-				for (String key : keyset) {
-					if (kwMerge.containsKey(key)) {
-						kwMerge.put(key, kwMerge.get(key) + kwMap.get(key));
-					} else {
-						if (key.contains("/")) {
-							String[] keys = key.split("/");
-							for (String inner_key : keys) {
-								if (kwMerge.containsKey(inner_key)) {
-									kwMerge.put(inner_key,
-											kwMerge.get(inner_key)
-													+ kwMap.get(key));
-								} else {
-									kwMerge.put(inner_key, kwMap.get(key));
-								}
-							}
-						} else {
-							kwMerge.put(key, kwMap.get(key));
-						}
-
-					}
-				}
-			}
-			LGDBUtils.writeToFile(kwMerge,
-					localexport + "/" + keyword + ".txt");
-		}
 	}
 
 	@Override
