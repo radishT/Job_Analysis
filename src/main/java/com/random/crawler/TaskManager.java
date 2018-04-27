@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.chrome.ChromeDriver;
@@ -253,25 +254,44 @@ public class TaskManager {
 		return null;
 	}
 
-	public void combineMaps() {
+	public List<Map<String, Integer>> combineMaps() {
+		List<Map<String, Integer>> mapList = null;
 		while (true) {
-			String sql = "SELECT message_map FROM job_message WHERE key_word='java' AND message_map IS NOT NULL ORDER BY url_id LIMIT 1";
+			String sql = "SELECT key_words FROM key_map WHERE key_word='java' ORDER BY id LIMIT 1";
 			try {
 				PreparedStatement stmt = conn.prepareStatement(sql);
 				ResultSet rs = stmt.executeQuery();
 				if (rs.wasNull()) {
-					return;
+					System.out.println("mapList完成");
+					return mapList;
 				}
 				rs.next();
-				Blob message_map = rs.getBlob(1);
-				ObjectInputStream objIs = new ObjectInputStream(message_map.getBinaryStream());
+				Blob keyWords = rs.getBlob(1);
+				ObjectInputStream objIs = new ObjectInputStream(keyWords.getBinaryStream());
 				Map<String, Integer> map = (Map<String, Integer>) objIs.readObject();
-				List<Map<String, Integer>> mapList = new ArrayList<Map<String, Integer>>();
+				mapList = new ArrayList<Map<String, Integer>>();
 				mapList.add(map);
-
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		}
+	}
+
+	public Map<String, Integer> combine(List<Map<String, Integer>> mapList) {
+		Map<String, Integer> keymap = new HashMap<String, Integer>();
+		for (Map<String, Integer> map : mapList) {
+			if (map == null) {
+				continue;
+			}
+			Set<String> keySet = map.keySet();
+			for (String key : keySet) {
+				if (keymap.containsKey(key)) {
+					keymap.put(key, keymap.get(key) + 1);
+				} else {
+					keymap.put(key, 1);
+				}
+			}
+		}
+		return keymap;
 	}
 }
