@@ -87,21 +87,60 @@
 	    <artifactId>lucene-core</artifactId>
 	    <version>2.0.0</version>
 	</dependency>
+	<!-- 分词依赖的包,导入到本地的命令为:
+	mvn install:install-file -Dfile=F:\je-analysis-1.5.3.jar -DgroupId=je -Darti
+factId=analysis -Dversion=1.5.3 -Dpackaging=jar -DgeneratePom=true -DcreateCheck
+sum=true
+	 -->
+	<dependency>
+		<groupId>je</groupId>
+	  	<artifactId>analysis</artifactId>
+	  	<version>1.5.3</version>
+	</dependency>
   </dependencies>
   <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-source-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>attach-sources</id>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
+    <plugins>
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <version>3.5.1</version>
+            <configuration>
+                <source>1.8</source>
+                <target>1.8</target>
+                
+            </configuration>
+        </plugin>
+        <!--配置生成Javadoc包-->
+        <plugin>    
+             <groupId>org.apache.maven.plugins</groupId>    
+             <artifactId>maven-javadoc-plugin</artifactId>    
+             <version>2.7</version>    
+             <executions>    
+                 <execution>    
+                     <id>attach-javadocs</id>    
+                     <goals>    
+                         <goal>jar</goal>    
+                     </goals>    
+                     <configuration>    
+                         <additionalparam>-Xdoclint:none</additionalparam>    
+                     </configuration>    
+                 </execution>    
+             </executions>    
+         </plugin>
+        <!--配置生成源码包-->
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-source-plugin</artifactId>
+            <version>3.0.1</version>
+            <executions>
+                <execution>
+                    <id>attach-sources</id>
+                    <goals>
+                        <goal>jar</goal>
+                    </goals>
+                </execution>
+            </executions>
+        </plugin>
+    </plugins>
+</build>
 </project>
