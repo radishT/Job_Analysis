@@ -1,0 +1,35 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<link rel="stylesheet" href="http://cdn.static.runoob.com/libs/bootstrap/3.3.7/css/bootstrap.min.css">  
+<script src="http://cdn.static.runoob.com/libs/jquery/2.1.1/jquery.min.js"></script>
+<script src="http://cdn.static.runoob.com/libs/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<style>
+	input{
+		width: 70px;
+		height: 40px;
+		margin-right: 15px;
+	}
+</style>
+<title>职业技能分析图</title>
+</head>
+<body>
+	<div align="center" >
+		<div>
+			<iframe id="main" src="java.html" frameborder="0" width="1200px" height="916px"></iframe>
+		</div>
+		<table>
+			<tr>
+				<td><input type="button" class="btn" value="java" onclick="javascript:document.getElementById('main').src='java.html';" ></td>
+				<td><input type="button" class="btn btn-default" value="python" onclick="javascript:document.getElementById('main').src='python.html';"></td>
+				<td><input type="button" class="btn btn-primary" value="c#" onclick="javascript:document.getElementById('main').src='c%23.html';" ></td>
+				<td><input type="button" class="btn btn-success" value="web" onclick="javascript:document.getElementById('main').src='web.html';" ></td>
+				<td><input type="button" class="btn btn-info" value="linux" onclick="javascript:document.getElementById('main').src='linux.html';" ></td>
+				<td><input type="button" class="btn btn-warning" value="android" onclick="javascript:document.getElementById('main').src='android.html';" ></td>
+				<td><input type="button" class="btn btn-danger" value="c++" onclick="javascript:document.getElementById('main').src='c%2b%2b.html';" ></td>
+			</tr>
+		</table>
+	</div>
+</body>
+</html>

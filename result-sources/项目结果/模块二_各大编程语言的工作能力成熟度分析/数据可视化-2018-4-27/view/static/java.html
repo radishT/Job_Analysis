@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<script src="js/echarts.js" ></script>
+<script src="js/echarts-wordcloud.js" ></script>
+<script type="text/javascript">
+	function initData() {
+		var myChart = echarts.init(document.getElementById('main'));
+		
+		var xArray = new Array();
+		var dataArray = new Array();
+		var result = [{"word":"spring","value":3766},{"word":"mysql","value":3118},{"word":"web","value":2195},{"word":"sql","value":2019},{"word":"oracle","value":1951},{"word":"linux","value":1827},{"word":"mybatis","value":1825},{"word":"redis","value":1515},{"word":"hibernate","value":1337},{"word":"javascript","value":1318},{"word":"tomcat","value":1278},{"word":"jquery","value":1187},{"word":"springmvc","value":1052},{"word":"html","value":994},{"word":"css","value":977},{"word":"mvc","value":892},{"word":"struts","value":799},{"word":"ajax","value":788},{"word":"jsp","value":722},{"word":"nosql","value":615}];
+		var word = [];
+		var value = [];
+		var data = [];
+		
+		var max = 0;
+		// 根据返回的数据来建立数组
+		for (var i = 0;i < result.length;i++) {
+			word.push(result[i].word)
+			value.push(result[i].value)
+			if(result[i].value > max){
+				max = result[i].value;
+			}
+		}
+		data.push({
+			name: 'java',
+			value: value
+		})
+		
+		var idt = [];
+		// 根据返回的数据来建立indicator
+		for (var i = 0;i < result.length;i++) {
+			idt.push({
+				name: result[i].word,
+				max: max
+			});
+		}
+		
+		option = {
+			    title: {
+			        text: 'java技能分析图',
+			        textStyle: {
+		        		fontSize: 30,
+		        		fontWeight: 'bolder',
+		        	}
+			        
+			    },
+			    tooltip: {},
+			    legend: {
+			        data: [{
+			        	name: 'java',
+			        	textStyle: {
+			        		fontSize: 20,
+			        		fontWeight: 'bolder',
+			        	},
+			        	icon: 'stack'
+			        }]
+			    },
+			    radar: {
+			        shape: 'circle',
+			        name: {
+			            textStyle: {
+			                color: '#fff',
+			                backgroundColor: '#999',
+			                borderRadius: 3,
+			                padding: [3, 5],
+			    			fontSize: 25
+			           }
+			        },
+			        indicator: idt
+			    },
+			    series: [{
+			        name: 'java',
+			        type: 'radar',
+			        areaStyle: {normal: {}},
+			        data : data
+			    }]
+			};
+	
+		myChart.setOption(option);
+	}
+	
+
+	
+</script>
+</head>
+<body onload="initData();" >
+	<div id="main" style="width:1150px;height:900px;margin: 0 auto" ></div>
+</body>
+</html>
+
+

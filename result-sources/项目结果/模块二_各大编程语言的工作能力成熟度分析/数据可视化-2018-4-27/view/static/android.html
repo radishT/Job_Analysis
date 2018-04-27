@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<script src="js/echarts.js" ></script>
+<script src="js/echarts-wordcloud.js" ></script>
+<script type="text/javascript">
+	function initData() {
+		var myChart = echarts.init(document.getElementById('main'));
+		
+		var xArray = new Array();
+		var dataArray = new Array();
+		var result = [{"word":"java","value":2107},{"word":"app","value":1937},{"word":"ui","value":1387},{"word":"sdk","value":1221},{"word":"c","value":977},{"word":"http","value":883},{"word":"tcp","value":632},{"word":"socket","value":536},{"word":"ip","value":497},{"word":"framework","value":448},{"word":"ios","value":367},{"word":"api","value":333},{"word":"json","value":332},{"word":"xml","value":313},{"word":"studio","value":268},{"word":"git","value":268},{"word":"ndk","value":260},{"word":"jni","value":252},{"word":"linux","value":246},{"word":"native","value":189}];
+		var word = [];
+		var value = [];
+		var data = [];
+		
+		var max = 0;
+		// 根据返回的数据来建立数组
+		for (var i = 0;i < result.length;i++) {
+			word.push(result[i].word)
+			value.push(result[i].value)
+			if(result[i].value > max){
+				max = result[i].value;
+			}
+		}
+		data.push({
+			name: 'android',
+			value: value
+		})
+		
+		var idt = [];
+		// 根据返回的数据来建立indicator
+		for (var i = 0;i < result.length;i++) {
+			idt.push({
+				name: result[i].word,
+				max: max
+			});
+		}
+		
+		option = {
+			    title: {
+			        text: 'android技能分析图',
+			        textStyle: {
+		        		fontSize: 30,
+		        		fontWeight: 'bolder',
+		        	}
+			        
+			    },
+			    tooltip: {},
+			    legend: {
+			        data: [{
+			        	name: 'android',
+			        	textStyle: {
+			        		fontSize: 20,
+			        		fontWeight: 'bolder',
+			        	},
+			        	icon: 'stack'
+			        }]
+			    },
+			    radar: {
+			        shape: 'circle',
+			        name: {
+			            textStyle: {
+			                color: '#fff',
+			                backgroundColor: '#999',
+			                borderRadius: 3,
+			                padding: [3, 5],
+			    			fontSize: 25
+			           }
+			        },
+			        indicator: idt
+			    },
+			    series: [{
+			        name: 'android',
+			        type: 'radar',
+			        areaStyle: {normal: {}},
+			        data : data
+			    }]
+			};
+	
+		myChart.setOption(option);
+	}
+	
+
+	
+</script>
+</head>
+<body onload="initData();" >
+	<div id="main" style="width:1150px;height:900px;margin: 0 auto" ></div>
+</body>
+</html>
+
+
