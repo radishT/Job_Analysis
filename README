@@ -1,5 +1,5 @@
-项目过程记录文件-----/Project_Info.doc
-
+项目过程记录文件-----/概要设计.doc
+注意:分词jar包需要手动install到maven仓库,详见pom中的注释部分
 项目部署说明:
 ====clone  从github拷贝到本地仓库
 	eclipse---配置完maven后---import git project---clone URI---general project
@@ -31,5 +31,9 @@
 						  com.radish.crawler  是我爬虫
 ----pom文件不许修改,如果要申请加入依赖,找组长
 
+----项目其他资源文件:/sources  如hadoop在windows上需要的dll和exe
 
+----阶段性成果的提交目录:/result-sources    提交的文件命名要规范
+
+----result  项目结束的最终展示成果  2018-04-28
 
