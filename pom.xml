@@ -48,7 +48,7 @@
     <dependency>
 	    <groupId>org.apache.hadoop</groupId>
 	    <artifactId>hadoop-common</artifactId>
-	    <version>2.7.2</version>
+	    <version>3.2.3</version>
     	<scope>provided</scope>
 	</dependency>
 	<!-- log4j -->
